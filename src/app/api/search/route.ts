@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { semanticSearch } from "@/lib/pipeline";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -17,27 +18,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Query is required" }, { status: 400 });
   }
 
-  // TODO: Embed query with Gemini Embedding 2 and use pgvector similarity search
-  // For now, do a basic text search as placeholder
-  const { data: results, error } = await supabase
-    .from("items")
-    .select("*")
-    .eq("user_id", user.id)
-    .or(
-      `original_title.ilike.%${query}%,original_summary.ilike.%${query}%,translated_title.ilike.%${query}%,translated_summary.ilike.%${query}%,original_content.ilike.%${query}%`
-    )
-    .order("created_at", { ascending: false })
-    .limit(20);
+  try {
+    // Semantic search via Chroma + Gemini Embedding 2
+    const results = await semanticSearch(query.trim(), user.id, 20);
+    return NextResponse.json({ results });
+  } catch (err) {
+    // Fallback to text search if Chroma/Gemini unavailable
+    console.error("Semantic search failed, falling back to text search:", err);
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const { data: results } = await supabase
+      .from("items")
+      .select(
+        "id, content_type, original_title, translated_title, original_summary, translated_summary, translated_language, auto_tags, thumbnail_url, source_url, content_category, created_at"
+      )
+      .eq("user_id", user.id)
+      .or(
+        `original_title.ilike.%${query}%,original_summary.ilike.%${query}%,translated_title.ilike.%${query}%,translated_summary.ilike.%${query}%`
+      )
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    const withSimilarity = (results || []).map((item) => ({
+      ...item,
+      similarity: 0.7,
+    }));
+
+    return NextResponse.json({ results: withSimilarity });
   }
-
-  // Add mock similarity for now
-  const resultsWithSimilarity = (results || []).map((item) => ({
-    ...item,
-    similarity: 0.85,
-  }));
-
-  return NextResponse.json({ results: resultsWithSimilarity });
 }

@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "dashboard": "Dashboard",
+    "search": "Search",
+    "settings": "Settings",
+    "saveSomething": "Save something",
+    "saveNew": "Save new"
+  },
+  "landing": {
+    "badge": "Works in 100+ languages",
+    "headline1": "A second brain that",
+    "headline2": "thinks in your language",
+    "subheadline": "Save anything — articles, images, notes, PDFs — in any language. Search in yours. Your knowledge, your language, always.",
+    "ctaPrimary": "Start saving for free",
+    "ctaSecondary": "See how it works",
+    "feature1Title": "Save in any language",
+    "feature1Desc": "English article, Hindi notes, Japanese recipe — save it all. YourMind understands every language natively.",
+    "feature2Title": "Search across languages",
+    "feature2Desc": "Search in Hindi, find English articles. Concepts have no language barrier in your second brain.",
+    "feature3Title": "Read in your language",
+    "feature3Desc": "Every summary, tag, and collection adapts to your preferred language. Your mind, your way."
+  },
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInSubtitle": "Sign in to your second brain",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Your password",
+    "signIn": "Sign in",
+    "continueWithGoogle": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "createAccount": "Create your account",
+    "signUpSubtitle": "Start building your second brain",
+    "passwordMin": "At least 6 characters",
+    "continue": "Continue",
+    "alreadyHaveAccount": "Already have an account?",
+    "chooseLanguage": "Choose your language",
+    "chooseLanguageSubtitle": "YourMind will present everything in this language",
+    "startUsing": "Start using YourMind",
+    "back": "Back"
+  },
+  "dashboard": {
+    "title": "Your Mind",
+    "emptyTitle": "Your mind is empty",
+    "emptySubtitle": "Save articles, notes, images, and more. Everything will be organized and presented in your language.",
+    "saveFirstItem": "Save your first item",
+    "itemsCount": "{count} items saved",
+    "processing": "Understanding your content...",
+    "viewOriginal": "View original"
+  },
+  "saveModal": {
+    "title": "Save to YourMind",
+    "urlTab": "URL",
+    "noteTab": "Note",
+    "urlLabel": "Paste a URL",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "Save article",
+    "noteTitleLabel": "Title",
+    "noteTitlePlaceholder": "Note title",
+    "noteContentLabel": "Content",
+    "noteContentPlaceholder": "Write your note...",
+    "saveNote": "Save note",
+    "saving": "Saving..."
+  },
+  "search": {
+    "title": "Search your mind",
+    "subtitle": "Type in any language — find content saved in every language",
+    "placeholder": "Search concepts, not keywords...",
+    "searchButton": "Search",
+    "noResults": "No results found for \"{query}\"",
+    "match": "{percent}% match"
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Customize how YourMind works for you",
+    "languageTitle": "Display language",
+    "languageSubtitle": "All summaries, tags, and content will be presented in this language",
+    "saveChanges": "Save changes",
+    "saved": "Saved!"
+  },
+  "contentTypes": {
+    "article": "Article",
+    "note": "Note",
+    "image": "Image",
+    "pdf": "PDF",
+    "audio": "Audio"
+  },
+  "common": {
+    "close": "Close",
+    "or": "or",
+    "untitled": "Untitled",
+    "signOut": "Sign out",
+    "error": "Something went wrong",
+    "retry": "Try again"
+  }
+}

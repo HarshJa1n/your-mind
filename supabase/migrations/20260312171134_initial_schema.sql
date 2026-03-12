@@ -1,5 +1,5 @@
 -- Enable required extensions
-create extension if not exists "vector" with schema "extensions";
+-- Vectors are stored in Chroma Cloud (Gemini Embedding 2 multimodal, 3072 dims)
 create extension if not exists "uuid-ossp" with schema "extensions";
 
 -- Users profile table (extends Supabase auth.users)
@@ -51,8 +51,8 @@ create table public.items (
   auto_tags_original text[] default '{}',
   content_category text,
 
-  -- Embedding (Gemini Embedding 2 = 3072 dims)
-  embedding extensions.vector(3072),
+  -- Chroma document ID (embedding stored in Chroma Cloud)
+  chroma_id text,
 
   -- Media
   thumbnail_url text,
@@ -82,10 +82,8 @@ create policy "Users can delete own items"
   on public.items for delete
   using (auth.uid() = user_id);
 
--- Index for vector similarity search
-create index items_embedding_idx on public.items
-  using ivfflat (embedding extensions.vector_cosine_ops)
-  with (lists = 100);
+-- Index chroma_id for fast lookups
+create index items_chroma_id_idx on public.items (chroma_id);
 
 -- Cached full-content translations
 create table public.translations_cache (
@@ -139,54 +137,6 @@ create policy "Users can view own spaces"
 create policy "Users can manage own spaces"
   on public.spaces for all
   using (auth.uid() = user_id);
-
--- Function for semantic search
-create or replace function match_items(
-  query_embedding extensions.vector(3072),
-  match_threshold float default 0.5,
-  match_count int default 20,
-  filter_user_id uuid default null
-)
-returns table (
-  id uuid,
-  content_type text,
-  original_title text,
-  translated_title text,
-  original_summary text,
-  translated_summary text,
-  translated_language text,
-  auto_tags text[],
-  thumbnail_url text,
-  source_url text,
-  content_category text,
-  similarity float,
-  created_at timestamptz
-)
-language plpgsql
-as $$
-begin
-  return query
-  select
-    items.id,
-    items.content_type,
-    items.original_title,
-    items.translated_title,
-    items.original_summary,
-    items.translated_summary,
-    items.translated_language,
-    items.auto_tags,
-    items.thumbnail_url,
-    items.source_url,
-    items.content_category,
-    1 - (items.embedding <=> query_embedding) as similarity,
-    items.created_at
-  from public.items
-  where items.user_id = filter_user_id
-    and 1 - (items.embedding <=> query_embedding) > match_threshold
-  order by items.embedding <=> query_embedding
-  limit match_count;
-end;
-$$;
 
 -- Auto-create profile on signup
 create or replace function public.handle_new_user()

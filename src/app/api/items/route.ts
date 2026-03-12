@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { saveURLPipeline, saveNotePipeline } from "@/lib/pipeline";
 
 export async function GET() {
   const supabase = await createClient();
@@ -38,7 +39,6 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { type } = body;
 
-  // Get user's preferred language
   const { data: profile } = await supabase
     .from("profiles")
     .select("preferred_language")
@@ -47,51 +47,46 @@ export async function POST(request: Request) {
 
   const preferredLanguage = profile?.preferred_language || "en";
 
-  if (type === "note") {
-    const { title, content } = body;
-
-    // For now, insert the note directly. AI pipeline will be added next.
-    const { data, error } = await supabase
-      .from("items")
-      .insert({
-        user_id: user.id,
-        content_type: "note",
-        original_title: title,
-        original_content: content,
-        original_summary: content.substring(0, 200),
-        translated_language: preferredLanguage,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ item: data });
-  }
-
   if (type === "url") {
     const { url } = body;
-
-    // For now, insert basic URL item. Full extraction pipeline will be added.
-    const { data, error } = await supabase
-      .from("items")
-      .insert({
-        user_id: user.id,
-        content_type: "article",
-        source_url: url,
-        original_title: url,
-        translated_language: preferredLanguage,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!url) {
+      return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    return NextResponse.json({ item: data });
+    const result = await saveURLPipeline({
+      url,
+      userId: user.id,
+      preferredLanguage,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ itemId: result.itemId, processing: true });
+  }
+
+  if (type === "note") {
+    const { title, content } = body;
+    if (!title || !content) {
+      return NextResponse.json(
+        { error: "Title and content are required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await saveNotePipeline({
+      title,
+      content,
+      userId: user.id,
+      preferredLanguage,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 500 });
+    }
+
+    return NextResponse.json({ itemId: result.itemId, processing: true });
   }
 
   return NextResponse.json({ error: "Invalid type" }, { status: 400 });
