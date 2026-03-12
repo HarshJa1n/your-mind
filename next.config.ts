@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     ],
   },
   // Allow server components to use Node.js features needed by Chroma/Gemini
-  serverExternalPackages: ["chromadb", "@chroma-core/google-gemini", "@google/generative-ai"],
+  serverExternalPackages: ["chromadb", "@google/generative-ai"],
 };
 
 export default nextConfig;

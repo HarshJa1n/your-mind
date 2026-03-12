@@ -1,8 +1,34 @@
-import { ChromaClient } from "chromadb";
-import { GoogleGeminiEmbeddingFunction } from "@chroma-core/google-gemini";
+import { ChromaClient, type EmbeddingFunction } from "chromadb";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 let _client: ChromaClient | null = null;
-let _embedder: GoogleGeminiEmbeddingFunction | null = null;
+let _embedder: GeminiEmbeddingFunction | null = null;
+
+/**
+ * Custom embedding function using @google/generative-ai directly.
+ * Avoids the @chroma-core/google-gemini module format issues.
+ */
+class GeminiEmbeddingFunction implements EmbeddingFunction {
+  private genAI: GoogleGenerativeAI;
+  private modelName: string;
+
+  constructor(apiKey: string, modelName = "gemini-embedding-2-preview") {
+    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.modelName = modelName;
+  }
+
+  async generate(texts: string[]): Promise<number[][]> {
+    const model = this.genAI.getGenerativeModel({ model: this.modelName });
+    const embeddings: number[][] = [];
+
+    for (const text of texts) {
+      const result = await model.embedContent(text);
+      embeddings.push(result.embedding.values);
+    }
+
+    return embeddings;
+  }
+}
 
 export function getChromaClient(): ChromaClient {
   if (!_client) {
@@ -20,12 +46,9 @@ export function getChromaClient(): ChromaClient {
   return _client;
 }
 
-export function getEmbedder(): GoogleGeminiEmbeddingFunction {
+export function getEmbedder(): GeminiEmbeddingFunction {
   if (!_embedder) {
-    _embedder = new GoogleGeminiEmbeddingFunction({
-      apiKey: process.env.GEMINI_API_KEY!,
-      modelName: "gemini-embedding-2-preview",
-    });
+    _embedder = new GeminiEmbeddingFunction(process.env.GEMINI_API_KEY!);
   }
   return _embedder;
 }
@@ -39,17 +62,9 @@ export async function getUserCollection(userId: string) {
   const embedder = getEmbedder();
   const collectionName = `items-${userId.replace(/-/g, "")}`;
 
-  try {
-    return await client.getOrCreateCollection({
-      name: collectionName,
-      embeddingFunction: embedder,
-      metadata: { userId },
-    });
-  } catch {
-    return await client.getOrCreateCollection({
-      name: collectionName,
-      embeddingFunction: embedder,
-      metadata: { userId },
-    });
-  }
+  return await client.getOrCreateCollection({
+    name: collectionName,
+    embeddingFunction: embedder,
+    metadata: { userId },
+  });
 }
