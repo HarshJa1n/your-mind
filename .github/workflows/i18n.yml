@@ -1,0 +1,39 @@
+name: i18n — Auto-translate on push
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "locales/en.json"
+      - "i18n.json"
+
+  workflow_dispatch: {}
+
+jobs:
+  translate:
+    name: Translate missing locale strings
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Run Lingo.dev translation pipeline
+        run: npx lingo.dev@latest run --no-interactive
+        env:
+          LINGO_API_KEY: ${{ secrets.LINGO_API_KEY }}
+          LINGODOTDEV_API_KEY: ${{ secrets.LINGO_API_KEY }}
+
+      - name: Commit translated locales
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "i18n: auto-translate locale files [skip ci]"
+          file_pattern: "locales/*.json"
