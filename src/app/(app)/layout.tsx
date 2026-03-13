@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Sidebar } from "@/components/sidebar";
+import { getMessages } from "@/lib/i18n";
 
 export default async function AppLayout({
   children,
@@ -22,9 +23,12 @@ export default async function AppLayout({
     .eq("id", user.id)
     .single();
 
+  const locale = profile?.preferred_language || "en";
+  const messages = await getMessages(locale);
+
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar user={user} profile={profile} />
+      <Sidebar user={user} profile={profile} messages={messages} />
       <main className="flex-1 min-h-screen">{children}</main>
     </div>
   );

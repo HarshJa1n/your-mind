@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "signIn": "Se connecter",
+    "getStarted": "Commencer",
+    "dashboard": "Tableau de bord",
+    "search": "Rechercher",
+    "settings": "Paramètres",
+    "saveSomething": "Enregistrer quelque chose",
+    "saveNew": "Enregistrer nouveau"
+  },
+  "landing": {
+    "badge": "Fonctionne dans plus de 100 langues",
+    "headline1": "Un second cerveau qui",
+    "headline2": "pense dans votre langue",
+    "subheadline": "Enregistrez tout — articles, images, notes, PDF — dans n'importe quelle langue. Recherchez dans la vôtre. Vos connaissances, votre langue, toujours.",
+    "ctaPrimary": "Commencer à enregistrer gratuitement",
+    "ctaSecondary": "Voir comment ça marche",
+    "feature1Title": "Enregistrez dans n'importe quelle langue",
+    "feature1Desc": "Article en anglais, notes en hindi, recette en japonais — enregistrez tout. YourMind comprend nativement toutes les langues.",
+    "feature2Title": "Recherchez dans toutes les langues",
+    "feature2Desc": "Recherchez en hindi, trouvez des articles en anglais. Les concepts n'ont pas de barrière linguistique dans votre second cerveau.",
+    "feature3Title": "Lisez dans votre langue",
+    "feature3Desc": "Chaque résumé, étiquette et collection s'adapte à votre langue préférée. Votre esprit, à votre manière."
+  },
+  "auth": {
+    "welcomeBack": "Bon retour",
+    "signInSubtitle": "Connectez-vous à votre second cerveau",
+    "emailLabel": "Email",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Votre mot de passe",
+    "signIn": "Se connecter",
+    "continueWithGoogle": "Continuer avec Google",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "signUp": "S'inscrire",
+    "createAccount": "Créez votre compte",
+    "signUpSubtitle": "Commencez à construire votre second cerveau",
+    "passwordMin": "Au moins 6 caractères",
+    "continue": "Continuer",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "chooseLanguage": "Choisissez votre langue",
+    "chooseLanguageSubtitle": "YourMind présentera tout dans cette langue",
+    "startUsing": "Commencer à utiliser YourMind",
+    "back": "Retour"
+  },
+  "dashboard": {
+    "title": "Votre esprit",
+    "emptyTitle": "Votre esprit est vide",
+    "emptySubtitle": "Enregistrez des articles, des notes, des images et plus encore. Tout sera organisé et présenté dans votre langue.",
+    "saveFirstItem": "Enregistrez votre premier élément",
+    "itemsCount": "{count} éléments enregistrés",
+    "processing": "Analyse de votre contenu...",
+    "viewOriginal": "Voir l'original"
+  },
+  "saveModal": {
+    "title": "Enregistrer dans YourMind",
+    "urlTab": "URL",
+    "noteTab": "Note",
+    "urlLabel": "Collez une URL",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "Enregistrer l'article",
+    "noteTitleLabel": "Titre",
+    "noteTitlePlaceholder": "Titre de la note",
+    "noteContentLabel": "Contenu",
+    "noteContentPlaceholder": "Rédigez votre note...",
+    "saveNote": "Enregistrer la note",
+    "saving": "Enregistrement..."
+  },
+  "search": {
+    "title": "Explorez votre esprit",
+    "subtitle": "Tapez dans n'importe quelle langue — retrouvez du contenu sauvegardé dans toutes les langues",
+    "placeholder": "Recherchez des concepts, pas des mots-clés...",
+    "searchButton": "Rechercher",
+    "noResults": "Aucun résultat trouvé pour « {query} »",
+    "match": "{percent} % de correspondance"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Personnalisez le fonctionnement de YourMind",
+    "languageTitle": "Langue d'affichage",
+    "languageSubtitle": "Tous les résumés, tags et contenus seront présentés dans cette langue",
+    "saveChanges": "Enregistrer les modifications",
+    "saved": "Enregistré !"
+  },
+  "contentTypes": {
+    "article": "Article",
+    "note": "Note",
+    "image": "Image",
+    "pdf": "PDF",
+    "audio": "Audio"
+  },
+  "common": {
+    "close": "Fermer",
+    "or": "ou",
+    "untitled": "Sans titre",
+    "signOut": "Se déconnecter",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "signIn": "Anmelden",
+    "getStarted": "Loslegen",
+    "dashboard": "Dashboard",
+    "search": "Suchen",
+    "settings": "Einstellungen",
+    "saveSomething": "Etwas speichern",
+    "saveNew": "Neu speichern"
+  },
+  "landing": {
+    "badge": "Funktioniert in über 100 Sprachen",
+    "headline1": "Ein zweites Gehirn, das",
+    "headline2": "in deiner Sprache denkt",
+    "subheadline": "Speichere alles – Artikel, Bilder, Notizen, PDFs – in jeder Sprache. Suche in deiner. Dein Wissen, deine Sprache, immer.",
+    "ctaPrimary": "Kostenlos loslegen",
+    "ctaSecondary": "So funktioniert's",
+    "feature1Title": "In jeder Sprache speichern",
+    "feature1Desc": "Englischer Artikel, Hindi-Notizen, japanisches Rezept – speichere alles. YourMind versteht jede Sprache nativ.",
+    "feature2Title": "Sprachübergreifend suchen",
+    "feature2Desc": "Suche auf Hindi, finde englische Artikel. Konzepte kennen keine Sprachbarrieren in deinem zweiten Gehirn.",
+    "feature3Title": "In deiner Sprache lesen",
+    "feature3Desc": "Jede Zusammenfassung, jedes Tag und jede Sammlung passt sich deiner bevorzugten Sprache an. Dein Verstand, auf deine Art."
+  },
+  "auth": {
+    "welcomeBack": "Willkommen zurück",
+    "signInSubtitle": "Melde dich bei deinem zweiten Gehirn an",
+    "emailLabel": "E-Mail",
+    "emailPlaceholder": "du@beispiel.de",
+    "passwordLabel": "Passwort",
+    "passwordPlaceholder": "Dein Passwort",
+    "signIn": "Anmelden",
+    "continueWithGoogle": "Mit Google fortfahren",
+    "noAccount": "Noch kein Konto?",
+    "signUp": "Registrieren",
+    "createAccount": "Erstellen Sie Ihr Konto",
+    "signUpSubtitle": "Beginnen Sie mit dem Aufbau Ihres zweiten Gehirns",
+    "passwordMin": "Mindestens 6 Zeichen",
+    "continue": "Weiter",
+    "alreadyHaveAccount": "Bereits ein Konto?",
+    "chooseLanguage": "Wählen Sie Ihre Sprache",
+    "chooseLanguageSubtitle": "YourMind wird alles in dieser Sprache darstellen",
+    "startUsing": "YourMind verwenden",
+    "back": "Zurück"
+  },
+  "dashboard": {
+    "title": "Ihr Mind",
+    "emptyTitle": "Ihr Mind ist leer",
+    "emptySubtitle": "Speichern Sie Artikel, Notizen, Bilder und mehr. Alles wird organisiert und in Ihrer Sprache präsentiert.",
+    "saveFirstItem": "Speichern Sie Ihr erstes Element",
+    "itemsCount": "{count} Elemente gespeichert",
+    "processing": "Ihr Inhalt wird verarbeitet...",
+    "viewOriginal": "Original anzeigen"
+  },
+  "saveModal": {
+    "title": "In YourMind speichern",
+    "urlTab": "URL",
+    "noteTab": "Notiz",
+    "urlLabel": "URL einfügen",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "Artikel speichern",
+    "noteTitleLabel": "Titel",
+    "noteTitlePlaceholder": "Notiz-Titel",
+    "noteContentLabel": "Inhalt",
+    "noteContentPlaceholder": "Schreiben Sie Ihre Notiz...",
+    "saveNote": "Notiz speichern",
+    "saving": "Wird gespeichert..."
+  },
+  "search": {
+    "title": "Durchsuchen Sie Ihr Gedächtnis",
+    "subtitle": "Tippen Sie in einer beliebigen Sprache – finden Sie Inhalte, die in jeder Sprache gespeichert sind",
+    "placeholder": "Suchen Sie nach Konzepten, nicht nach Stichwörtern...",
+    "searchButton": "Suchen",
+    "noResults": "Keine Ergebnisse für \"{query}\" gefunden",
+    "match": "{percent} % Übereinstimmung"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Passen Sie an, wie YourMind für Sie funktioniert",
+    "languageTitle": "Anzeigesprache",
+    "languageSubtitle": "Alle Zusammenfassungen, Tags und Inhalte werden in dieser Sprache dargestellt",
+    "saveChanges": "Änderungen speichern",
+    "saved": "Gespeichert!"
+  },
+  "contentTypes": {
+    "article": "Artikel",
+    "note": "Notiz",
+    "image": "Bild",
+    "pdf": "PDF",
+    "audio": "Audio"
+  },
+  "common": {
+    "close": "Schließen",
+    "or": "oder",
+    "untitled": "Ohne Titel",
+    "signOut": "Abmelden",
+    "error": "Etwas ist schiefgelaufen",
+    "retry": "Erneut versuchen"
+  }
+}

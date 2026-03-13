@@ -11,7 +11,11 @@ import {
   LogOut,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { createTranslator } from "@/lib/i18n";
 import type { User } from "@supabase/supabase-js";
+import type en from "../../locales/en.json";
+
+type Messages = typeof en;
 
 interface Profile {
   id: string;
@@ -21,22 +25,25 @@ interface Profile {
   preferred_language: string;
 }
 
-const NAV_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
-  { href: "/search", label: "Search", icon: Search },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
-
 export function Sidebar({
   user,
   profile,
+  messages,
 }: {
   user: User;
   profile: Profile | null;
+  messages: Messages;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
+  const t = createTranslator(messages);
+
+  const NAV_ITEMS = [
+    { href: "/dashboard", label: t("nav.dashboard"), icon: LayoutGrid },
+    { href: "/search", label: t("nav.search"), icon: Search },
+    { href: "/settings", label: t("nav.settings"), icon: Settings },
+  ];
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -46,7 +53,6 @@ export function Sidebar({
 
   return (
     <aside className="w-64 border-r border-border bg-card flex flex-col h-screen sticky top-0">
-      {/* Logo */}
       <div className="p-6 pb-4">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Brain className="h-6 w-6 text-accent" />
@@ -54,18 +60,16 @@ export function Sidebar({
         </Link>
       </div>
 
-      {/* Add new */}
       <div className="px-4 mb-2">
         <Link
           href="/dashboard?new=true"
           className="flex items-center gap-2 w-full px-4 py-2.5 rounded-lg bg-accent text-accent-foreground font-medium text-sm hover:opacity-90 transition-opacity cursor-pointer"
         >
           <Plus className="h-4 w-4" />
-          Save something
+          {t("nav.saveSomething")}
         </Link>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-4 py-2">
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => {
@@ -89,7 +93,6 @@ export function Sidebar({
         </ul>
       </nav>
 
-      {/* User section */}
       <div className="p-4 border-t border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
@@ -108,7 +111,7 @@ export function Sidebar({
           <button
             onClick={handleLogout}
             className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded-lg hover:bg-secondary"
-            aria-label="Sign out"
+            aria-label={t("common.signOut")}
           >
             <LogOut className="h-4 w-4" />
           </button>

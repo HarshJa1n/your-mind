@@ -1,0 +1,100 @@
+{
+  "nav": {
+    "signIn": "Accedi",
+    "getStarted": "Inizia",
+    "dashboard": "Dashboard",
+    "search": "Cerca",
+    "settings": "Impostazioni",
+    "saveSomething": "Salva qualcosa",
+    "saveNew": "Salva nuovo"
+  },
+  "landing": {
+    "badge": "Funziona in oltre 100 lingue",
+    "headline1": "Un secondo cervello che",
+    "headline2": "pensa nella tua lingua",
+    "subheadline": "Salva qualsiasi cosa — articoli, immagini, note, PDF — in qualsiasi lingua. Cerca nella tua. La tua conoscenza, la tua lingua, sempre.",
+    "ctaPrimary": "Inizia a salvare gratis",
+    "ctaSecondary": "Scopri come funziona",
+    "feature1Title": "Salva in qualsiasi lingua",
+    "feature1Desc": "Articolo in inglese, note in hindi, ricetta in giapponese — salva tutto. YourMind comprende nativamente ogni lingua.",
+    "feature2Title": "Cerca tra le lingue",
+    "feature2Desc": "Cerca in hindi, trova articoli in inglese. I concetti non hanno barriere linguistiche nel tuo secondo cervello.",
+    "feature3Title": "Leggi nella tua lingua",
+    "feature3Desc": "Ogni riassunto, tag e raccolta si adatta alla tua lingua preferita. La tua mente, a modo tuo."
+  },
+  "auth": {
+    "welcomeBack": "Bentornato",
+    "signInSubtitle": "Accedi al tuo secondo cervello",
+    "emailLabel": "Email",
+    "emailPlaceholder": "tu@esempio.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "La tua password",
+    "signIn": "Accedi",
+    "continueWithGoogle": "Continua con Google",
+    "noAccount": "Non hai un account?",
+    "signUp": "Registrati",
+    "createAccount": "Crea il tuo account",
+    "signUpSubtitle": "Inizia a costruire il tuo secondo cervello",
+    "passwordMin": "Almeno 6 caratteri",
+    "continue": "Continua",
+    "alreadyHaveAccount": "Hai già un account?",
+    "chooseLanguage": "Scegli la tua lingua",
+    "chooseLanguageSubtitle": "YourMind presenterà tutto in questa lingua",
+    "startUsing": "Inizia a usare YourMind",
+    "back": "Indietro"
+  },
+  "dashboard": {
+    "title": "La Tua Mente",
+    "emptyTitle": "La tua mente è vuota",
+    "emptySubtitle": "Salva articoli, note, immagini e molto altro. Tutto sarà organizzato e presentato nella tua lingua.",
+    "saveFirstItem": "Salva il tuo primo elemento",
+    "itemsCount": "{count} elementi salvati",
+    "processing": "Sto elaborando i tuoi contenuti...",
+    "viewOriginal": "Visualizza originale"
+  },
+  "saveModal": {
+    "title": "Salva su YourMind",
+    "urlTab": "URL",
+    "noteTab": "Nota",
+    "urlLabel": "Incolla un URL",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "Salva articolo",
+    "noteTitleLabel": "Titolo",
+    "noteTitlePlaceholder": "Titolo della nota",
+    "noteContentLabel": "Contenuto",
+    "noteContentPlaceholder": "Scrivi la tua nota...",
+    "saveNote": "Salva nota",
+    "saving": "Salvataggio..."
+  },
+  "search": {
+    "title": "Cerca nella tua mente",
+    "subtitle": "Digita in qualsiasi lingua — trova contenuti salvati in ogni lingua",
+    "placeholder": "Cerca concetti, non parole chiave...",
+    "searchButton": "Cerca",
+    "noResults": "Nessun risultato trovato per \"{query}\"",
+    "match": "{percent}% di corrispondenza"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "subtitle": "Personalizza il funzionamento di YourMind",
+    "languageTitle": "Lingua di visualizzazione",
+    "languageSubtitle": "Tutti i riepiloghi, i tag e i contenuti verranno presentati in questa lingua",
+    "saveChanges": "Salva modifiche",
+    "saved": "Salvato!"
+  },
+  "contentTypes": {
+    "article": "Articolo",
+    "note": "Nota",
+    "image": "Immagine",
+    "pdf": "PDF",
+    "audio": "Audio"
+  },
+  "common": {
+    "close": "Chiudi",
+    "or": "o",
+    "untitled": "Senza titolo",
+    "signOut": "Esci",
+    "error": "Qualcosa è andato storto",
+    "retry": "Riprova"
+  }
+}

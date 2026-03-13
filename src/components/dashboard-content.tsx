@@ -16,6 +16,10 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { createTranslator } from "@/lib/i18n";
+import type en from "../../locales/en.json";
+
+type Messages = typeof en;
 
 interface Item {
   id: string;
@@ -50,7 +54,6 @@ const CONTENT_TYPE_COLORS: Record<string, string> = {
   audio: "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300",
 };
 
-/** Item is "processing" if it has no summary/tags yet and no chroma_id */
 function isProcessing(item: Item): boolean {
   return !item.chroma_id && !item.original_summary;
 }
@@ -58,15 +61,17 @@ function isProcessing(item: Item): boolean {
 export function DashboardContent({
   items: initialItems,
   preferredLanguage,
+  messages,
 }: {
   items: Item[];
   preferredLanguage: string;
+  messages: Messages;
 }) {
   const [items, setItems] = useState<Item[]>(initialItems);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const router = useRouter();
+  const t = createTranslator(messages);
 
-  // Poll for updates if any items are still processing
   const hasProcessing = items.some(isProcessing);
 
   const fetchItems = useCallback(async () => {
@@ -87,14 +92,13 @@ export function DashboardContent({
 
   return (
     <div className="p-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Your Mind</h1>
+          <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {items.length === 0
-              ? "Save your first item to get started"
-              : `${items.length} item${items.length === 1 ? "" : "s"} saved`}
+              ? t("dashboard.emptySubtitle")
+              : t("dashboard.itemsCount", { count: items.length })}
           </p>
         </div>
         <button
@@ -102,42 +106,39 @@ export function DashboardContent({
           className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground font-medium text-sm hover:opacity-90 transition-opacity cursor-pointer"
         >
           <Plus className="h-4 w-4" />
-          Save new
+          {t("nav.saveNew")}
         </button>
       </div>
 
-      {/* Content grid */}
       {items.length === 0 ? (
-        <EmptyState onAdd={() => setShowSaveModal(true)} />
+        <EmptyState onAdd={() => setShowSaveModal(true)} t={t} />
       ) : (
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
           {items.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard key={item.id} item={item} t={t} />
           ))}
         </div>
       )}
 
-      {/* Save modal */}
       {showSaveModal && (
         <SaveModal
           onClose={() => {
             setShowSaveModal(false);
-            // Refresh to show newly added item
             fetchItems();
             router.refresh();
           }}
+          t={t}
         />
       )}
     </div>
   );
 }
 
-function ItemCard({ item }: { item: Item }) {
+function ItemCard({ item, t }: { item: Item; t: ReturnType<typeof createTranslator> }) {
   const Icon = CONTENT_TYPE_ICONS[item.content_type] || FileText;
-  const colorClass =
-    CONTENT_TYPE_COLORS[item.content_type] || CONTENT_TYPE_COLORS.article;
+  const colorClass = CONTENT_TYPE_COLORS[item.content_type] || CONTENT_TYPE_COLORS.article;
   const processing = isProcessing(item);
-  const title = item.translated_title || item.original_title || "Untitled";
+  const title = item.translated_title || item.original_title || t("common.untitled");
   const summary = item.translated_summary || item.original_summary;
 
   const sourceHostname = (() => {
@@ -154,26 +155,18 @@ function ItemCard({ item }: { item: Item }) {
           : "border-border hover:shadow-md hover:border-border/80"
         }`}
     >
-      {/* Thumbnail */}
       {item.thumbnail_url && !processing && (
         <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-4 bg-muted">
-          <img
-            src={item.thumbnail_url}
-            alt=""
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
+          <img src={item.thumbnail_url} alt="" className="w-full h-full object-cover" loading="lazy" />
         </div>
       )}
 
-      {/* Processing skeleton thumbnail */}
       {processing && (
         <div className="w-full aspect-video rounded-lg mb-4 bg-muted/60 flex items-center justify-center">
           <Sparkles className="h-6 w-6 text-accent/50 animate-spin" style={{ animationDuration: "3s" }} />
         </div>
       )}
 
-      {/* Type badge row */}
       <div className="flex items-center gap-2 mb-3">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${colorClass}`}>
           <Icon className="h-3 w-3" />
@@ -188,19 +181,17 @@ function ItemCard({ item }: { item: Item }) {
         {processing && (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs text-accent bg-accent/10 font-medium">
             <Loader2 className="h-3 w-3 animate-spin" />
-            Understanding…
+            {t("dashboard.processing")}
           </span>
         )}
       </div>
 
-      {/* Title */}
       <h3 className="font-semibold text-sm leading-snug mb-2 line-clamp-2 group-hover:text-accent transition-colors">
         {processing ? (
           <span className="inline-block w-3/4 h-4 bg-muted rounded animate-pulse" />
         ) : title}
       </h3>
 
-      {/* Summary */}
       {processing ? (
         <div className="space-y-1.5 mb-3">
           <span className="block h-3 bg-muted rounded animate-pulse w-full" />
@@ -208,26 +199,19 @@ function ItemCard({ item }: { item: Item }) {
           <span className="block h-3 bg-muted rounded animate-pulse w-4/6" />
         </div>
       ) : summary ? (
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-3">
-          {summary}
-        </p>
+        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-3">{summary}</p>
       ) : null}
 
-      {/* Tags */}
       {!processing && item.auto_tags && item.auto_tags.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-3">
           {item.auto_tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-0.5 rounded-md text-xs bg-secondary text-secondary-foreground"
-            >
+            <span key={tag} className="px-2 py-0.5 rounded-md text-xs bg-secondary text-secondary-foreground">
               {tag}
             </span>
           ))}
         </div>
       )}
 
-      {/* Source */}
       {sourceHostname && (
         <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
           <p className="text-xs text-muted-foreground truncate">{sourceHostname}</p>
@@ -248,28 +232,27 @@ function ItemCard({ item }: { item: Item }) {
   );
 }
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({ onAdd, t }: { onAdd: () => void; t: ReturnType<typeof createTranslator> }) {
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <div className="w-20 h-20 rounded-2xl bg-secondary flex items-center justify-center mb-6">
         <Plus className="h-9 w-9 text-muted-foreground" />
       </div>
-      <h2 className="text-xl font-semibold mb-2">Your mind is empty</h2>
+      <h2 className="text-xl font-semibold mb-2">{t("dashboard.emptyTitle")}</h2>
       <p className="text-muted-foreground max-w-sm mb-8 leading-relaxed">
-        Save articles, notes, images, and more. Everything will be organised and
-        presented in your language.
+        {t("dashboard.emptySubtitle")}
       </p>
       <button
         onClick={onAdd}
         className="px-6 py-3 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity cursor-pointer"
       >
-        Save your first item
+        {t("dashboard.saveFirstItem")}
       </button>
     </div>
   );
 }
 
-function SaveModal({ onClose }: { onClose: () => void }) {
+function SaveModal({ onClose, t }: { onClose: () => void; t: ReturnType<typeof createTranslator> }) {
   const [mode, setMode] = useState<"url" | "note">("url");
   const [url, setUrl] = useState("");
   const [noteTitle, setNoteTitle] = useState("");
@@ -289,11 +272,11 @@ function SaveModal({ onClose }: { onClose: () => void }) {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to save");
+        throw new Error(data.error || t("common.error"));
       }
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : t("common.error"));
     } finally {
       setLoading(false);
     }
@@ -311,11 +294,11 @@ function SaveModal({ onClose }: { onClose: () => void }) {
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to save");
+        throw new Error(data.error || t("common.error"));
       }
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : t("common.error"));
     } finally {
       setLoading(false);
     }
@@ -328,17 +311,16 @@ function SaveModal({ onClose }: { onClose: () => void }) {
     >
       <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl">
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-lg font-semibold">Save to YourMind</h2>
+          <h2 className="text-lg font-semibold">{t("saveModal.title")}</h2>
           <button
             onClick={onClose}
             className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded-lg hover:bg-secondary"
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Mode tabs */}
         <div className="flex gap-1 mx-6 p-1 bg-secondary rounded-xl mb-0">
           {(["url", "note"] as const).map((m) => (
             <button
@@ -349,7 +331,7 @@ function SaveModal({ onClose }: { onClose: () => void }) {
               }`}
             >
               {m === "url" ? <LinkIcon className="h-4 w-4" /> : <StickyNote className="h-4 w-4" />}
-              {m === "url" ? "URL" : "Note"}
+              {m === "url" ? t("saveModal.urlTab") : t("saveModal.noteTab")}
             </button>
           ))}
         </div>
@@ -359,7 +341,7 @@ function SaveModal({ onClose }: { onClose: () => void }) {
             <form onSubmit={handleSaveUrl} className="space-y-4">
               <div>
                 <label htmlFor="url" className="block text-sm font-medium mb-1.5">
-                  Paste a URL
+                  {t("saveModal.urlLabel")}
                 </label>
                 <input
                   id="url"
@@ -368,7 +350,7 @@ function SaveModal({ onClose }: { onClose: () => void }) {
                   onChange={(e) => setUrl(e.target.value)}
                   required
                   autoFocus
-                  placeholder="https://example.com/article"
+                  placeholder={t("saveModal.urlPlaceholder")}
                   className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
@@ -378,14 +360,14 @@ function SaveModal({ onClose }: { onClose: () => void }) {
                 disabled={loading}
                 className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
-                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : "Save article"}
+                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("saveModal.saving")}</> : t("saveModal.saveArticle")}
               </button>
             </form>
           ) : (
             <form onSubmit={handleSaveNote} className="space-y-4">
               <div>
                 <label htmlFor="note-title" className="block text-sm font-medium mb-1.5">
-                  Title
+                  {t("saveModal.noteTitleLabel")}
                 </label>
                 <input
                   id="note-title"
@@ -394,13 +376,13 @@ function SaveModal({ onClose }: { onClose: () => void }) {
                   onChange={(e) => setNoteTitle(e.target.value)}
                   required
                   autoFocus
-                  placeholder="Note title"
+                  placeholder={t("saveModal.noteTitlePlaceholder")}
                   className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
               <div>
                 <label htmlFor="note-content" className="block text-sm font-medium mb-1.5">
-                  Content
+                  {t("saveModal.noteContentLabel")}
                 </label>
                 <textarea
                   id="note-content"
@@ -408,7 +390,7 @@ function SaveModal({ onClose }: { onClose: () => void }) {
                   onChange={(e) => setNoteContent(e.target.value)}
                   required
                   rows={5}
-                  placeholder="Write your note…"
+                  placeholder={t("saveModal.noteContentPlaceholder")}
                   className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                 />
               </div>
@@ -418,7 +400,7 @@ function SaveModal({ onClose }: { onClose: () => void }) {
                 disabled={loading}
                 className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
-                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Saving…</> : "Save note"}
+                {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> {t("saveModal.saving")}</> : t("saveModal.saveNote")}
               </button>
             </form>
           )}

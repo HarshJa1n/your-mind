@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { DashboardContent } from "@/components/dashboard-content";
+import { getMessages } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +23,14 @@ export default async function DashboardPage() {
     .eq("id", user!.id)
     .single();
 
+  const locale = profile?.preferred_language || "en";
+  const messages = await getMessages(locale);
+
   return (
     <DashboardContent
       items={items || []}
-      preferredLanguage={profile?.preferred_language || "en"}
+      preferredLanguage={locale}
+      messages={messages}
     />
   );
 }
