@@ -3,11 +3,19 @@
   "version": "1.15",
   "locale": {
     "source": "en",
-    "targets": ["hi", "es", "fr", "de", "ja", "ko", "zh", "ar", "pt", "ru", "it"]
+    "targets": [
+      "hi",
+      "es",
+      "fr",
+      "de",
+      "ja"
+    ]
   },
   "buckets": {
     "json": {
-      "include": ["locales/[locale].json"]
+      "include": [
+        "locales/[locale].json"
+      ]
     }
   }
 }

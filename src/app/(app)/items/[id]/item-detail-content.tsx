@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -12,7 +12,6 @@ import {
   Globe,
   ExternalLink,
   Loader2,
-  Languages,
 } from "lucide-react";
 import { createTranslator } from "@/lib/i18n";
 import type en from "../../../../../locales/en.json";
@@ -72,36 +71,40 @@ export default function ItemDetailContent({
 
   const title = item.translated_title || item.original_title || t("common.untitled");
   const summary = item.translated_summary || item.original_summary;
-  const isTranslated =
-    item.original_language &&
-    item.translated_language &&
-    item.original_language !== item.translated_language;
+
+  const originalLang = item.original_language || "en";
+  // Need to translate if content language differs from user locale
+  const needsContentTranslation =
+    !!item.original_content && originalLang !== locale;
 
   const displayContent = translatedContent || item.original_content;
-  const needsTranslation =
-    !translatedContent &&
-    item.original_content &&
-    isTranslated &&
-    locale !== "en";
 
-  async function handleTranslate() {
-    setTranslating(true);
-    setTranslationError("");
-    try {
-      const res = await fetch(`/api/items/${item.id}/translate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetLocale: locale }),
-      });
-      if (!res.ok) throw new Error("Translation failed");
-      const data = await res.json();
-      setTranslatedContent(data.content);
-    } catch {
-      setTranslationError(t("common.error"));
-    } finally {
-      setTranslating(false);
+  // Layer 3: auto-translate full content on page open, cache aggressively
+  useEffect(() => {
+    if (!needsContentTranslation) return;
+
+    async function autoTranslate() {
+      setTranslating(true);
+      setTranslationError("");
+      try {
+        const res = await fetch(`/api/items/${item.id}/translate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ targetLocale: locale }),
+        });
+        if (!res.ok) throw new Error("Translation failed");
+        const data = await res.json();
+        setTranslatedContent(data.content);
+      } catch {
+        setTranslationError(t("common.error"));
+      } finally {
+        setTranslating(false);
+      }
     }
-  }
+
+    autoTranslate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.id, locale]);
 
   return (
     <div className="max-w-3xl mx-auto p-8">
@@ -125,16 +128,16 @@ export default function ItemDetailContent({
         </div>
       )}
 
-      {/* Header */}
+      {/* Header badges */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${colorClass}`}>
           <Icon className="h-3 w-3" />
           {item.content_type}
         </span>
-        {isTranslated && (
+        {needsContentTranslation && (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground bg-muted">
             <Globe className="h-3 w-3" />
-            {item.original_language?.toUpperCase()} → {item.translated_language?.toUpperCase()}
+            {originalLang.toUpperCase()} &#8594; {locale.toUpperCase()}
           </span>
         )}
         {item.content_category && (
@@ -173,43 +176,50 @@ export default function ItemDetailContent({
         </div>
       )}
 
-      {/* Summary */}
+      {/* Summary — Layer 2 already translated at save time */}
       {summary && (
         <div className="bg-secondary/50 rounded-xl p-5 mb-6">
           <p className="text-sm leading-relaxed text-muted-foreground">{summary}</p>
         </div>
       )}
 
-      {/* Full Content */}
+      {/* Full Content — Layer 3 auto-translated on open, cached */}
       {item.original_content && (
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              {translatedContent ? `Content (${item.translated_language?.toUpperCase()})` : "Content"}
+              {translatedContent ? `Content (${locale.toUpperCase()})` : "Content"}
             </h2>
-            {needsTranslation && (
-              <button
-                onClick={handleTranslate}
-                disabled={translating}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent/10 text-accent hover:bg-accent/20 transition-colors disabled:opacity-50 cursor-pointer"
-              >
-                {translating ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Languages className="h-3.5 w-3.5" />
-                )}
-                {translating ? t("saveModal.saving") : `Translate to ${item.translated_language?.toUpperCase()}`}
-              </button>
+            {needsContentTranslation && translating && (
+              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Translating...
+              </span>
             )}
           </div>
+
           {translationError && (
             <p className="text-sm text-destructive mb-3">{translationError}</p>
           )}
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-              {displayContent}
-            </p>
-          </div>
+
+          {translating && !translatedContent ? (
+            // Skeleton while translating
+            <div className="space-y-2">
+              {[...Array(8)].map((_, i) => (
+                <span
+                  key={i}
+                  className="block h-3.5 bg-muted rounded animate-pulse"
+                  style={{ width: `${95 - i * 4}%` }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
+                {displayContent}
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>
