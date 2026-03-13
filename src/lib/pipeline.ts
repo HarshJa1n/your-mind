@@ -16,11 +16,8 @@
  */
 
 import { getUserCollection } from "./chroma";
-import {
-  extractArticleContent,
-  processWithGemini,
-  translateWithGemini,
-} from "./gemini";
+import { extractArticleContent, processWithGemini } from "./gemini";
+import { translateMeta, translateTags } from "./lingo";
 import { createClient as createSupabaseClient } from "./supabase/server";
 import { v4 as uuidv4 } from "uuid";
 
@@ -115,34 +112,20 @@ async function processURLBackground({
       preferredLanguage
     );
 
-    // 3. Translate to user's preferred language
-    const [translatedTitle, translatedSummary] = await Promise.all([
-      aiResult.detectedLanguage !== preferredLanguage
-        ? translateWithGemini(
-            aiResult.title,
-            preferredLanguage,
-            aiResult.detectedLanguage
-          )
-        : Promise.resolve(aiResult.title),
-      aiResult.detectedLanguage !== preferredLanguage
-        ? translateWithGemini(
-            aiResult.summary,
-            preferredLanguage,
-            aiResult.detectedLanguage
-          )
-        : Promise.resolve(aiResult.summary),
-    ]);
+    // 3. Translate title + summary via Lingo.dev SDK (Layer 2)
+    const { title: translatedTitle, summary: translatedSummary } =
+      await translateMeta(
+        { title: aiResult.title, summary: aiResult.summary },
+        aiResult.detectedLanguage || "en",
+        preferredLanguage
+      );
 
-    // Translate tags to user language
-    const tagsText = aiResult.tags.join(", ");
-    const translatedTagsText =
-      preferredLanguage !== "en"
-        ? await translateWithGemini(tagsText, preferredLanguage, "en")
-        : tagsText;
-    const translatedTags = translatedTagsText
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    // Translate tags via Lingo.dev SDK (Layer 2)
+    const translatedTags = await translateTags(
+      aiResult.tags,
+      aiResult.detectedLanguage || "en",
+      preferredLanguage
+    );
 
     // 4. Embed text + store in Chroma
     const collection = await getUserCollection(userId);
@@ -243,29 +226,20 @@ async function processNoteBackground({
     // AI processing
     const aiResult = await processWithGemini(content, title, preferredLanguage);
 
-    // Translate if needed
-    const [translatedTitle, translatedSummary] = await Promise.all([
-      aiResult.detectedLanguage !== preferredLanguage
-        ? translateWithGemini(title, preferredLanguage, aiResult.detectedLanguage)
-        : Promise.resolve(title),
-      aiResult.detectedLanguage !== preferredLanguage
-        ? translateWithGemini(
-            aiResult.summary,
-            preferredLanguage,
-            aiResult.detectedLanguage
-          )
-        : Promise.resolve(aiResult.summary),
-    ]);
+    // Translate title + summary via Lingo.dev SDK (Layer 2)
+    const { title: translatedTitle, summary: translatedSummary } =
+      await translateMeta(
+        { title, summary: aiResult.summary },
+        aiResult.detectedLanguage || "en",
+        preferredLanguage
+      );
 
-    const tagsText = aiResult.tags.join(", ");
-    const translatedTagsText =
-      preferredLanguage !== "en"
-        ? await translateWithGemini(tagsText, preferredLanguage, "en")
-        : tagsText;
-    const translatedTags = translatedTagsText
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
+    // Translate tags via Lingo.dev SDK (Layer 2)
+    const translatedTags = await translateTags(
+      aiResult.tags,
+      aiResult.detectedLanguage || "en",
+      preferredLanguage
+    );
 
     // Embed + store in Chroma
     const collection = await getUserCollection(userId);
