@@ -16,6 +16,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createTranslator } from "@/lib/i18n";
 import type en from "../../locales/en.json";
 
@@ -148,10 +149,11 @@ function ItemCard({ item, t }: { item: Item; t: ReturnType<typeof createTranslat
   })();
 
   return (
-    <div
-      className={`break-inside-avoid bg-card border rounded-xl p-5 transition-all cursor-pointer group
+    <Link
+      href={`/items/${item.id}`}
+      className={`block break-inside-avoid bg-card border rounded-xl p-5 transition-all cursor-pointer group
         ${processing
-          ? "border-accent/30 animate-pulse-soft"
+          ? "border-accent/30 animate-pulse-soft pointer-events-none"
           : "border-border hover:shadow-md hover:border-border/80"
         }`}
     >
@@ -228,7 +230,7 @@ function ItemCard({ item, t }: { item: Item; t: ReturnType<typeof createTranslat
           )}
         </div>
       )}
-    </div>
+    </Link>
   );
 }
 
