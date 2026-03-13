@@ -34,12 +34,11 @@ export function getChromaClient(): ChromaClient {
   if (!_client) {
     _client = new ChromaClient({
       host: "api.trychroma.com",
+      ssl: true,
       tenant: process.env.CHROMA_TENANT!,
       database: process.env.CHROMA_DATABASE!,
-      auth: {
-        provider: "token",
-        credentials: process.env.CHROMA_API_KEY!,
-        tokenHeaderType: "X_CHROMA_TOKEN",
+      headers: {
+        "X-Chroma-Token": process.env.CHROMA_API_KEY!,
       },
     });
   }
