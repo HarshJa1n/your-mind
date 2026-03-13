@@ -15,12 +15,6 @@ const LANGUAGES = [
   { code: "fr", name: "French", native: "Fran\u00e7ais" },
   { code: "de", name: "German", native: "Deutsch" },
   { code: "ja", name: "Japanese", native: "\u65e5\u672c\u8a9e" },
-  { code: "ko", name: "Korean", native: "\ud55c\uad6d\uc5b4" },
-  { code: "zh", name: "Chinese", native: "\u4e2d\u6587" },
-  { code: "ar", name: "Arabic", native: "\u0627\u0644\u0639\u0631\u0628\u064a\u0629" },
-  { code: "pt", name: "Portuguese", native: "Portugu\u00eas" },
-  { code: "ru", name: "Russian", native: "\u0420\u0443\u0441\u0441\u043a\u0438\u0439" },
-  { code: "it", name: "Italian", native: "Italiano" },
 ];
 
 export default function SettingsContent({

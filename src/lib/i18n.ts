@@ -18,12 +18,25 @@ export async function getMessages(locale: string): Promise<LocaleMessages> {
   if (cache[locale]) return cache[locale];
 
   try {
-    const messages = (await import(`../../locales/${locale}.json`)) as DeepPartial<LocaleMessages>;
+    const raw = await importLocale(locale);
+    if (!raw) return en;
+    const messages = raw as DeepPartial<LocaleMessages>;
     const merged = deepMerge(en, messages) as LocaleMessages;
     cache[locale] = merged;
     return merged;
   } catch {
     return en;
+  }
+}
+
+async function importLocale(locale: string) {
+  switch (locale) {
+    case "hi": return (await import("../../locales/hi.json")).default;
+    case "es": return (await import("../../locales/es.json")).default;
+    case "fr": return (await import("../../locales/fr.json")).default;
+    case "de": return (await import("../../locales/de.json")).default;
+    case "ja": return (await import("../../locales/ja.json")).default;
+    default: return null;
   }
 }
 
