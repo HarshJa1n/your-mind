@@ -16,7 +16,12 @@
  */
 
 import { getUserCollection } from "./chroma";
-import { extractArticleContent, processWithGemini } from "./gemini";
+import {
+  extractArticleContent,
+  processWithGemini,
+  processImageWithGemini,
+  processAudioWithGemini,
+} from "./gemini";
 import { translateMeta, translateTags } from "./lingo";
 import { createClient as createSupabaseClient } from "./supabase/server";
 import { v4 as uuidv4 } from "uuid";
@@ -266,6 +271,216 @@ async function processNoteBackground({
       .eq("id", itemId);
   } catch (err) {
     console.error("Background note processing failed:", err);
+  }
+}
+
+export interface SaveFileInput {
+  buffer: Buffer;
+  mimeType: string;
+  fileName: string;
+  userId: string;
+  preferredLanguage: string;
+}
+
+/**
+ * Full pipeline for saving an image.
+ */
+export async function saveImagePipeline(
+  input: SaveFileInput
+): Promise<PipelineResult> {
+  const { buffer, mimeType, fileName, userId, preferredLanguage } = input;
+  const supabase = await createSupabaseClient();
+  const itemId = uuidv4();
+
+  const { error: insertError } = await supabase.from("items").insert({
+    id: itemId,
+    user_id: userId,
+    content_type: "image",
+    original_title: fileName,
+    translated_title: fileName,
+    translated_language: preferredLanguage,
+    auto_tags: [],
+  });
+
+  if (insertError) return { itemId, success: false, error: insertError.message };
+
+  processImageBackground({
+    buffer,
+    mimeType,
+    fileName,
+    userId,
+    itemId,
+    preferredLanguage,
+  }).catch(console.error);
+
+  return { itemId, success: true };
+}
+
+async function processImageBackground({
+  buffer,
+  mimeType,
+  fileName,
+  userId,
+  itemId,
+  preferredLanguage,
+}: {
+  buffer: Buffer;
+  mimeType: string;
+  fileName: string;
+  userId: string;
+  itemId: string;
+  preferredLanguage: string;
+}) {
+  const supabase = await createSupabaseClient();
+  try {
+    const aiResult = await processImageWithGemini(buffer, mimeType, preferredLanguage);
+
+    const { title: translatedTitle, summary: translatedSummary } =
+      await translateMeta(
+        { title: aiResult.title, summary: aiResult.summary },
+        "en",
+        preferredLanguage
+      );
+    const translatedTags = await translateTags(aiResult.tags, "en", preferredLanguage);
+
+    const textToEmbed = `${aiResult.title}\n\n${aiResult.description}\n\n${aiResult.summary}`;
+    const collection = await getUserCollection(userId);
+    await collection.add({
+      ids: [itemId],
+      documents: [textToEmbed],
+      metadatas: [{ supabaseId: itemId, userId, contentType: "image" }],
+    });
+
+    // Upload to Supabase Storage (requires 'uploads' bucket with public access)
+    let thumbnailUrl: string | null = null;
+    try {
+      const ext = (mimeType.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      const storagePath = `${userId}/${itemId}.${ext}`;
+      const { error: storageError } = await supabase.storage
+        .from("uploads")
+        .upload(storagePath, buffer, { contentType: mimeType, upsert: true });
+      if (!storageError) {
+        thumbnailUrl = supabase.storage
+          .from("uploads")
+          .getPublicUrl(storagePath).data.publicUrl;
+      }
+    } catch {
+      // Storage not configured — thumbnail will be null
+    }
+
+    await supabase
+      .from("items")
+      .update({
+        original_title: aiResult.title,
+        original_summary: aiResult.summary,
+        original_content: aiResult.description,
+        original_language: "en",
+        translated_title: translatedTitle,
+        translated_summary: translatedSummary,
+        translated_language: preferredLanguage,
+        auto_tags: translatedTags,
+        auto_tags_original: aiResult.tags,
+        content_category: aiResult.category,
+        thumbnail_url: thumbnailUrl,
+        chroma_id: itemId,
+      })
+      .eq("id", itemId);
+  } catch (err) {
+    console.error("Background image processing failed:", err);
+  }
+}
+
+/**
+ * Full pipeline for saving audio.
+ */
+export async function saveAudioPipeline(
+  input: SaveFileInput
+): Promise<PipelineResult> {
+  const { buffer, mimeType, fileName, userId, preferredLanguage } = input;
+  const supabase = await createSupabaseClient();
+  const itemId = uuidv4();
+
+  const { error: insertError } = await supabase.from("items").insert({
+    id: itemId,
+    user_id: userId,
+    content_type: "audio",
+    original_title: fileName,
+    translated_title: fileName,
+    translated_language: preferredLanguage,
+    auto_tags: [],
+  });
+
+  if (insertError) return { itemId, success: false, error: insertError.message };
+
+  processAudioBackground({
+    buffer,
+    mimeType,
+    fileName,
+    userId,
+    itemId,
+    preferredLanguage,
+  }).catch(console.error);
+
+  return { itemId, success: true };
+}
+
+async function processAudioBackground({
+  buffer,
+  mimeType,
+  fileName,
+  userId,
+  itemId,
+  preferredLanguage,
+}: {
+  buffer: Buffer;
+  mimeType: string;
+  fileName: string;
+  userId: string;
+  itemId: string;
+  preferredLanguage: string;
+}) {
+  const supabase = await createSupabaseClient();
+  try {
+    const aiResult = await processAudioWithGemini(buffer, mimeType, preferredLanguage);
+
+    const { title: translatedTitle, summary: translatedSummary } =
+      await translateMeta(
+        { title: aiResult.title, summary: aiResult.summary },
+        aiResult.detectedLanguage || "en",
+        preferredLanguage
+      );
+    const translatedTags = await translateTags(
+      aiResult.tags,
+      aiResult.detectedLanguage || "en",
+      preferredLanguage
+    );
+
+    const textToEmbed = `${aiResult.title}\n\n${aiResult.transcript}\n\n${aiResult.summary}`;
+    const collection = await getUserCollection(userId);
+    await collection.add({
+      ids: [itemId],
+      documents: [textToEmbed],
+      metadatas: [{ supabaseId: itemId, userId, contentType: "audio" }],
+    });
+
+    await supabase
+      .from("items")
+      .update({
+        original_title: aiResult.title,
+        original_summary: aiResult.summary,
+        original_content: aiResult.transcript,
+        original_language: aiResult.detectedLanguage,
+        translated_title: translatedTitle,
+        translated_summary: translatedSummary,
+        translated_language: preferredLanguage,
+        auto_tags: translatedTags,
+        auto_tags_original: aiResult.tags,
+        content_category: aiResult.category,
+        chroma_id: itemId,
+      })
+      .eq("id", itemId);
+  } catch (err) {
+    console.error("Background audio processing failed:", err);
   }
 }
 

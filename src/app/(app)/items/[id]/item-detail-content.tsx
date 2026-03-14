@@ -65,6 +65,7 @@ export default function ItemDetailContent({
   const [translatedContent, setTranslatedContent] = useState<string | null>(null);
   const [translating, setTranslating] = useState(false);
   const [translationError, setTranslationError] = useState("");
+  const [showOriginal, setShowOriginal] = useState(false);
 
   const Icon = CONTENT_TYPE_ICONS[item.content_type] || FileText;
   const colorClass = CONTENT_TYPE_COLORS[item.content_type] || CONTENT_TYPE_COLORS.article;
@@ -77,7 +78,9 @@ export default function ItemDetailContent({
   const needsContentTranslation =
     !!item.original_content && originalLang !== locale;
 
-  const displayContent = translatedContent || item.original_content;
+  const displayContent = showOriginal
+    ? item.original_content
+    : translatedContent || item.original_content;
 
   // Layer 3: auto-translate full content on page open, cache aggressively
   useEffect(() => {
@@ -188,14 +191,28 @@ export default function ItemDetailContent({
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              {translatedContent ? `Content (${locale.toUpperCase()})` : "Content"}
+              {translatedContent && !showOriginal
+                ? `Content (${locale.toUpperCase()})`
+                : "Content"}
             </h2>
-            {needsContentTranslation && translating && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Translating...
-              </span>
-            )}
+            <div className="flex items-center gap-3">
+              {needsContentTranslation && translating && (
+                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Translating...
+                </span>
+              )}
+              {translatedContent && needsContentTranslation && !translating && (
+                <button
+                  onClick={() => setShowOriginal((v) => !v)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2 cursor-pointer"
+                >
+                  {showOriginal
+                    ? t("itemDetail.viewTranslated")
+                    : t("itemDetail.viewOriginal")}
+                </button>
+              )}
+            </div>
           </div>
 
           {translationError && (

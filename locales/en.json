@@ -50,12 +50,16 @@
     "saveFirstItem": "Save your first item",
     "itemsCount": "{count} items saved",
     "processing": "Understanding your content...",
-    "viewOriginal": "View original"
+    "viewOriginal": "View original",
+    "allSpaces": "All",
+    "loadingMore": "Loading more..."
   },
   "saveModal": {
     "title": "Save to YourMind",
     "urlTab": "URL",
     "noteTab": "Note",
+    "imageTab": "Image",
+    "audioTab": "Audio",
     "urlLabel": "Paste a URL",
     "urlPlaceholder": "https://example.com/article",
     "saveArticle": "Save article",
@@ -64,7 +68,16 @@
     "noteContentLabel": "Content",
     "noteContentPlaceholder": "Write your note...",
     "saveNote": "Save note",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "dropOrClick": "Drop file here or click to browse",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — max 80 seconds",
+    "saveImage": "Save image",
+    "saveAudio": "Save audio"
+  },
+  "itemDetail": {
+    "viewOriginal": "View original",
+    "viewTranslated": "View translated"
   },
   "search": {
     "title": "Search your mind",

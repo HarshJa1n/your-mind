@@ -139,6 +139,118 @@ Rules:
 }
 
 /**
+ * Process an image with Gemini Flash (vision).
+ * Returns AI-generated title, summary, description, tags, category.
+ */
+export async function processImageWithGemini(
+  imageBuffer: Buffer,
+  mimeType: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _preferredLanguage: string
+): Promise<AIProcessingResult & { description: string }> {
+  const genAI = getGenAI();
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const base64Data = imageBuffer.toString("base64");
+
+  const prompt = `Analyze this image. Respond with a JSON object only (no markdown, no extra text).
+
+{
+  "title": "concise descriptive title",
+  "description": "detailed 2-3 sentence description of what is shown",
+  "summary": "2-3 sentence summary with context",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "category": "one of: photo, art, design, screenshot, diagram, product, other"
+}`;
+
+  try {
+    const result = await model.generateContent([
+      { inlineData: { mimeType, data: base64Data } },
+      { text: prompt },
+    ] as Parameters<typeof model.generateContent>[0]);
+    const responseText = result.response.text().trim();
+    const jsonText = responseText
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+    const parsed = JSON.parse(jsonText);
+    return {
+      title: parsed.title || "Untitled Image",
+      summary: parsed.summary || parsed.description || "",
+      tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+      category: parsed.category || "photo",
+      detectedLanguage: "en",
+      description: parsed.description || parsed.summary || "",
+    };
+  } catch {
+    return {
+      title: "Untitled Image",
+      summary: "",
+      tags: [],
+      category: "photo",
+      detectedLanguage: "en",
+      description: "",
+    };
+  }
+}
+
+/**
+ * Process audio with Gemini Flash (audio understanding + transcription).
+ */
+export async function processAudioWithGemini(
+  audioBuffer: Buffer,
+  mimeType: string,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _preferredLanguage: string
+): Promise<AIProcessingResult & { transcript: string }> {
+  const genAI = getGenAI();
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const base64Data = audioBuffer.toString("base64");
+
+  const prompt = `Analyze this audio. Respond with a JSON object only (no markdown, no extra text).
+
+{
+  "title": "concise title for this audio",
+  "transcript": "full transcription of spoken words, or description of music/sounds",
+  "summary": "2-3 sentence summary of the audio content",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "category": "one of: speech, music, podcast, lecture, interview, meeting, other",
+  "detectedLanguage": "ISO 639-1 language code e.g. en, hi, es"
+}`;
+
+  try {
+    const result = await model.generateContent([
+      { inlineData: { mimeType, data: base64Data } },
+      { text: prompt },
+    ] as Parameters<typeof model.generateContent>[0]);
+    const responseText = result.response.text().trim();
+    const jsonText = responseText
+      .replace(/^```json\s*/i, "")
+      .replace(/^```\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+    const parsed = JSON.parse(jsonText);
+    return {
+      title: parsed.title || "Untitled Audio",
+      summary: parsed.summary || "",
+      tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+      category: parsed.category || "speech",
+      detectedLanguage: parsed.detectedLanguage || "en",
+      transcript: parsed.transcript || "",
+    };
+  } catch {
+    return {
+      title: "Untitled Audio",
+      summary: "",
+      tags: [],
+      category: "speech",
+      detectedLanguage: "en",
+      transcript: "",
+    };
+  }
+}
+
+/**
  * Translate text to the target language using Gemini.
  */
 export async function translateWithGemini(
