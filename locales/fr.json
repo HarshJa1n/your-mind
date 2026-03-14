@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "signIn": "Se connecter",
+    "getStarted": "Commencer",
+    "dashboard": "Tableau de bord",
+    "search": "Rechercher",
+    "settings": "Paramètres",
+    "saveSomething": "Enregistrer quelque chose",
+    "saveNew": "Nouveau"
+  },
+  "landing": {
+    "badge": "Fonctionne en plus de 100 langues",
+    "headline1": "Un second cerveau qui",
+    "headline2": "pense dans votre langue",
+    "subheadline": "Enregistrez tout — articles, images, notes, PDF — dans n'importe quelle langue. Recherchez dans la vôtre. Votre savoir, votre langue, toujours.",
+    "ctaPrimary": "Commencer gratuitement",
+    "ctaSecondary": "Voir comment ça marche",
+    "feature1Title": "Enregistrez dans toutes les langues",
+    "feature1Desc": "Article en anglais, notes en hindi, recette en japonais — enregistrez tout. YourMind comprend toutes les langues nativement.",
+    "feature2Title": "Recherchez sans barrière linguistique",
+    "feature2Desc": "Recherchez en hindi, trouvez des articles en anglais. Les concepts n'ont pas de barrière de langue dans votre second cerveau.",
+    "feature3Title": "Lisez dans votre langue",
+    "feature3Desc": "Chaque résumé, tag et collection s'adapte à votre langue préférée. Votre esprit, à votre façon."
+  },
+  "auth": {
+    "welcomeBack": "Bon retour",
+    "signInSubtitle": "Connectez-vous à votre second cerveau",
+    "emailLabel": "Email",
+    "emailPlaceholder": "vous@exemple.com",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Votre mot de passe",
+    "signIn": "Se connecter",
+    "continueWithGoogle": "Continuer avec Google",
+    "noAccount": "Pas encore de compte ?",
+    "signUp": "S'inscrire",
+    "createAccount": "Créez votre compte",
+    "signUpSubtitle": "Construisez votre second cerveau",
+    "passwordMin": "Au moins 6 caractères",
+    "continue": "Continuer",
+    "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "chooseLanguage": "Choisissez votre langue",
+    "chooseLanguageSubtitle": "YourMind affichera tout dans cette langue",
+    "startUsing": "Commencer avec YourMind",
+    "back": "Retour"
+  },
+  "dashboard": {
+    "title": "Votre esprit",
+    "emptyTitle": "Votre esprit est vide",
+    "emptySubtitle": "Sauvegardez des articles, notes, images et plus. Tout sera organisé et présenté dans votre langue.",
+    "saveFirstItem": "Enregistrez votre premier élément",
+    "itemsCount": "{count, plural, one {# élément enregistré} other {# éléments enregistrés}}",
+    "processing": "Analyse de votre contenu...",
+    "processingFailed": "Échec du traitement",
+    "processingFailedMsg": "Le délai de traitement a expiré. Essayez de l'enregistrer à nouveau.",
+    "viewOriginal": "Voir l'original",
+    "allSpaces": "Tout",
+    "loadingMore": "Chargement..."
+  },
+  "saveModal": {
+    "title": "Enregistrer dans YourMind",
+    "urlTab": "URL",
+    "noteTab": "Note",
+    "imageTab": "Image",
+    "audioTab": "Audio",
+    "urlLabel": "Coller une URL",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "Enregistrer l'article",
+    "noteTitleLabel": "Titre",
+    "noteTitlePlaceholder": "Titre de la note",
+    "noteContentLabel": "Contenu",
+    "noteContentPlaceholder": "Rédigez votre note...",
+    "saveNote": "Enregistrer la note",
+    "saving": "Enregistrement...",
+    "dropOrClick": "Déposez un fichier ou cliquez pour parcourir",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — max 80 secondes",
+    "saveImage": "Enregistrer l'image",
+    "saveAudio": "Enregistrer l'audio"
+  },
+  "itemDetail": {
+    "viewOriginal": "Voir l'original",
+    "viewTranslated": "Voir la traduction",
+    "translating": "Traduction...",
+    "contentLabel": "Contenu",
+    "contentLabelTranslated": "Contenu ({locale})"
+  },
+  "search": {
+    "title": "Recherchez dans votre esprit",
+    "subtitle": "Tapez dans n'importe quelle langue — trouvez du contenu enregistré dans toutes les langues",
+    "placeholder": "Recherchez des concepts, pas des mots-clés...",
+    "searchButton": "Rechercher",
+    "noResults": "Aucun résultat pour \"{query}\"",
+    "match": "{percent} % de correspondance"
+  },
+  "settings": {
+    "title": "Réglages",
+    "subtitle": "Personnalisez YourMind selon vos préférences",
+    "languageTitle": "Langue d'affichage",
+    "languageSubtitle": "Tous les résumés, tags et contenus seront présentés dans cette langue",
+    "saveChanges": "Enregistrer",
+    "saved": "Enregistré !"
+  },
+  "contentTypes": {
+    "article": "Article",
+    "note": "Note",
+    "image": "Image",
+    "pdf": "PDF",
+    "audio": "Audio"
+  },
+  "common": {
+    "close": "Fermer",
+    "or": "ou",
+    "untitled": "Sans titre",
+    "signOut": "Se déconnecter",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer"
+  }
+}

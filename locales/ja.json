@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "signIn": "ログイン",
+    "getStarted": "はじめる",
+    "dashboard": "ダッシュボード",
+    "search": "検索",
+    "settings": "設定",
+    "saveSomething": "保存する",
+    "saveNew": "新規保存"
+  },
+  "landing": {
+    "badge": "100以上の言語に対応",
+    "headline1": "あなたの言語で",
+    "headline2": "考える第二の脳",
+    "subheadline": "記事、画像、メモ、PDFなど、あらゆる言語で保存。検索はあなたの言語で。知識も言語も、あなた次第。",
+    "ctaPrimary": "無料ではじめる",
+    "ctaSecondary": "使い方を見る",
+    "feature1Title": "どんな言語でも保存",
+    "feature1Desc": "英語の記事、ヒンディー語のメモ、日本語のレシピ——すべて保存できます。YourMindはあらゆる言語をネイティブに理解します。",
+    "feature2Title": "言語を超えて検索",
+    "feature2Desc": "ヒンディー語で検索して、英語の記事を発見。概念に言語の壁はありません。",
+    "feature3Title": "あなたの言語で読む",
+    "feature3Desc": "すべての要約、タグ、コレクションが、あなたの好みの言語に適応します。あなたの思考、あなたのスタイル。"
+  },
+  "auth": {
+    "welcomeBack": "おかえりなさい",
+    "signInSubtitle": "あなたの第二の脳にログイン",
+    "emailLabel": "メールアドレス",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "パスワード",
+    "passwordPlaceholder": "パスワードを入力",
+    "signIn": "ログイン",
+    "continueWithGoogle": "Googleで続ける",
+    "noAccount": "アカウントをお持ちでない方",
+    "signUp": "新規登録",
+    "createAccount": "アカウントを作成",
+    "signUpSubtitle": "第二の脳を構築しよう",
+    "passwordMin": "6文字以上",
+    "continue": "続ける",
+    "alreadyHaveAccount": "アカウントをお持ちの方",
+    "chooseLanguage": "言語を選択",
+    "chooseLanguageSubtitle": "YourMindはこの言語ですべてを表示します",
+    "startUsing": "YourMindを始める",
+    "back": "戻る"
+  },
+  "dashboard": {
+    "title": "あなたのマインド",
+    "emptyTitle": "マインドは空です",
+    "emptySubtitle": "記事、メモ、画像などを保存しましょう。すべてがあなたの言語で整理されて表示されます。",
+    "saveFirstItem": "最初のアイテムを保存",
+    "itemsCount": "{count}件保存済み",
+    "processing": "コンテンツを理解中...",
+    "processingFailed": "処理に失敗しました",
+    "processingFailedMsg": "処理がタイムアウトしました。もう一度保存してください。",
+    "viewOriginal": "元のページを表示",
+    "allSpaces": "すべて",
+    "loadingMore": "読み込み中..."
+  },
+  "saveModal": {
+    "title": "YourMindに保存",
+    "urlTab": "URL",
+    "noteTab": "メモ",
+    "imageTab": "画像",
+    "audioTab": "音声",
+    "urlLabel": "URLを貼り付け",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "記事を保存",
+    "noteTitleLabel": "タイトル",
+    "noteTitlePlaceholder": "メモのタイトル",
+    "noteContentLabel": "内容",
+    "noteContentPlaceholder": "メモを入力...",
+    "saveNote": "メモを保存",
+    "saving": "保存中...",
+    "dropOrClick": "ファイルをドロップまたはクリックして選択",
+    "imageHint": "JPEG、PNG、GIF、WebP",
+    "audioHint": "MP3、WAV、M4A — 最大80秒",
+    "saveImage": "画像を保存",
+    "saveAudio": "音声を保存"
+  },
+  "itemDetail": {
+    "viewOriginal": "原文を表示",
+    "viewTranslated": "翻訳を表示",
+    "translating": "翻訳中...",
+    "contentLabel": "内容",
+    "contentLabelTranslated": "内容（{locale}）"
+  },
+  "search": {
+    "title": "検索",
+    "subtitle": "どの言語でも入力可能 — あらゆる言語で保存したコンテンツを検索",
+    "placeholder": "キーワードではなく、概念で検索...",
+    "searchButton": "検索",
+    "noResults": "「{query}」の検索結果はありません",
+    "match": "{percent}%一致"
+  },
+  "settings": {
+    "title": "設定",
+    "subtitle": "YourMindの動作をカスタマイズ",
+    "languageTitle": "表示言語",
+    "languageSubtitle": "すべての要約、タグ、コンテンツがこの言語で表示されます",
+    "saveChanges": "変更を保存",
+    "saved": "保存しました"
+  },
+  "contentTypes": {
+    "article": "記事",
+    "note": "ノート",
+    "image": "画像",
+    "pdf": "PDF",
+    "audio": "音声"
+  },
+  "common": {
+    "close": "閉じる",
+    "or": "または",
+    "untitled": "無題",
+    "signOut": "サインアウト",
+    "error": "エラーが発生しました",
+    "retry": "再試行"
+  }
+}

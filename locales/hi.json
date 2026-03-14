@@ -1,0 +1,118 @@
+{
+  "nav": {
+    "signIn": "साइन इन करें",
+    "getStarted": "शुरू करें",
+    "dashboard": "डैशबोर्ड",
+    "search": "सर्च करें",
+    "settings": "सेटिंग्स",
+    "saveSomething": "कुछ सेव करें",
+    "saveNew": "नया सेव करें"
+  },
+  "landing": {
+    "badge": "100+ भाषाओं में काम करता है",
+    "headline1": "एक दूसरा दिमाग जो",
+    "headline2": "आपकी भाषा में सोचता है",
+    "subheadline": "कुछ भी सेव करें — आर्टिकल्स, इमेज, नोट्स, PDFs — किसी भी भाषा में। अपनी भाषा में सर्च करें। आपका नॉलेज, आपकी भाषा, हमेशा।",
+    "ctaPrimary": "फ्री में सेव करना शुरू करें",
+    "ctaSecondary": "ये कैसे काम करता है देखें",
+    "feature1Title": "किसी भी भाषा में सेव करें",
+    "feature1Desc": "English आर्टिकल, हिंदी नोट्स, Japanese रेसिपी — सब कुछ सेव करें। YourMind हर भाषा को नेटिवली समझता है।",
+    "feature2Title": "भाषाओं के पार सर्च करें",
+    "feature2Desc": "हिंदी में सर्च करें, English आर्टिकल्स मिलें। आपके दूसरे दिमाग में कॉन्सेप्ट्स की कोई भाषा बाधा नहीं।",
+    "feature3Title": "अपनी भाषा में पढ़ें",
+    "feature3Desc": "हर समरी, टैग और कलेक्शन आपकी पसंदीदा भाषा के हिसाब से adapt हो जाता है। आपका माइंड, आपका तरीका।"
+  },
+  "auth": {
+    "welcomeBack": "वापस स्वागत है",
+    "signInSubtitle": "अपने दूसरे दिमाग में साइन इन करें",
+    "emailLabel": "ईमेल",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "पासवर्ड",
+    "passwordPlaceholder": "आपका पासवर्ड",
+    "signIn": "साइन इन करें",
+    "continueWithGoogle": "Google से जारी रखें",
+    "noAccount": "अकाउंट नहीं है?",
+    "signUp": "साइन अप करें",
+    "createAccount": "अपना अकाउंट बनाएं",
+    "signUpSubtitle": "अपना सेकंड ब्रेन बनाना शुरू करें",
+    "passwordMin": "कम से कम 6 कैरेक्टर",
+    "continue": "जारी रखें",
+    "alreadyHaveAccount": "पहले से अकाउंट है?",
+    "chooseLanguage": "अपनी भाषा चुनें",
+    "chooseLanguageSubtitle": "YourMind सब कुछ इसी भाषा में दिखाएगा",
+    "startUsing": "YourMind इस्तेमाल करना शुरू करें",
+    "back": "वापस"
+  },
+  "dashboard": {
+    "title": "Your Mind",
+    "emptyTitle": "आपका माइंड खाली है",
+    "emptySubtitle": "आर्टिकल, नोट्स, इमेज और बहुत कुछ सेव करें। सब कुछ ऑर्गनाइज़ होकर आपकी भाषा में मिलेगा।",
+    "saveFirstItem": "अपनी पहली आइटम सेव करें",
+    "itemsCount": "{count} आइटम सेव हैं",
+    "processing": "आपका कंटेंट समझ रहे हैं...",
+    "processingFailed": "प्रोसेसिंग फेल हो गई",
+    "processingFailedMsg": "आइटम टाइम आउट हो गया। दोबारा सेव करके देखें।",
+    "viewOriginal": "ओरिजिनल देखें",
+    "allSpaces": "सभी",
+    "loadingMore": "और लोड हो रहा है..."
+  },
+  "saveModal": {
+    "title": "YourMind में सेव करें",
+    "urlTab": "URL",
+    "noteTab": "नोट",
+    "imageTab": "इमेज",
+    "audioTab": "ऑडियो",
+    "urlLabel": "URL पेस्ट करें",
+    "urlPlaceholder": "https://example.com/article",
+    "saveArticle": "आर्टिकल सेव करें",
+    "noteTitleLabel": "टाइटल",
+    "noteTitlePlaceholder": "नोट का टाइटल",
+    "noteContentLabel": "कंटेंट",
+    "noteContentPlaceholder": "अपना नोट लिखें...",
+    "saveNote": "नोट सेव करें",
+    "saving": "सेव हो रहा है...",
+    "dropOrClick": "फ़ाइल यहाँ ड्रॉप करें या ब्राउज़ करने के लिए क्लिक करें",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — max 80 सेकंड",
+    "saveImage": "इमेज सेव करें",
+    "saveAudio": "ऑडियो सेव करें"
+  },
+  "itemDetail": {
+    "viewOriginal": "ओरिजनल देखें",
+    "viewTranslated": "अनुवाद देखें",
+    "translating": "अनुवाद हो रहा है...",
+    "contentLabel": "कंटेंट",
+    "contentLabelTranslated": "कंटेंट ({locale})"
+  },
+  "search": {
+    "title": "अपने mind में खोजें",
+    "subtitle": "किसी भी भाषा में टाइप करें — हर भाषा में सेव किया कंटेंट खोजें",
+    "placeholder": "कॉन्सेप्ट खोजें, keywords नहीं...",
+    "searchButton": "खोजें",
+    "noResults": "\"{query}\" के लिए कोई रिजल्ट नहीं मिला",
+    "match": "{percent}% मैच"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "subtitle": "YourMind को अपने हिसाब से कस्टमाइज़ करें",
+    "languageTitle": "डिस्प्ले लैंग्वेज",
+    "languageSubtitle": "सभी समरी, टैग और कॉन्टेंट इस भाषा में दिखाए जाएंगे",
+    "saveChanges": "सेव करें",
+    "saved": "सेव हो गया!"
+  },
+  "contentTypes": {
+    "article": "आर्टिकल",
+    "note": "नोट",
+    "image": "इमेज",
+    "pdf": "PDF",
+    "audio": "ऑडियो"
+  },
+  "common": {
+    "close": "बंद करें",
+    "or": "या",
+    "untitled": "बिना टाइटल",
+    "signOut": "साइन आउट",
+    "error": "कुछ गड़बड़ हो गई",
+    "retry": "दोबारा कोशिश करें"
+  }
+}
