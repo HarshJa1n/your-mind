@@ -5,16 +5,19 @@ import { getMessages } from "@/lib/i18n";
 
 export default async function AppLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ lang: string }>;
 }) {
+  const { lang } = await params;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/${lang}/login`);
   }
 
   const { data: profile } = await supabase
@@ -23,12 +26,11 @@ export default async function AppLayout({
     .eq("id", user.id)
     .single();
 
-  const locale = profile?.preferred_language || "en";
-  const messages = await getMessages(locale);
+  const messages = await getMessages(lang);
 
   return (
     <div className="min-h-screen bg-background flex">
-      <Sidebar user={user} profile={profile} messages={messages} />
+      <Sidebar user={user} profile={profile} messages={messages} lang={lang} />
       <main className="flex-1 min-h-screen">{children}</main>
     </div>
   );

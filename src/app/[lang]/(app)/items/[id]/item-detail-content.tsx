@@ -14,7 +14,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { createTranslator } from "@/lib/i18n";
-import type en from "../../../../../locales/en.json";
+import type en from "../../../../../../locales/en.json";
 
 type Messages = typeof en;
 

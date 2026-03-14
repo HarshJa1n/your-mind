@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -8,19 +8,16 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "YourMind — A second brain that thinks in your language",
-  description:
-    "Save anything in any language. Search in yours. YourMind understands your content and presents it in your native language.",
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
+  const cookieStore = await cookies();
+  const lang = cookieStore.get("NEXT_LOCALE")?.value || "en";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <body className={`${dmSans.variable} font-sans antialiased`}>
         {children}
       </body>

@@ -5,9 +5,13 @@ import { getMessages } from "@/lib/i18n";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage(props: {
+  params: Promise<{ lang: string }>;
   searchParams: Promise<{ save?: string; title?: string }>;
 }) {
-  const searchParams = await props.searchParams;
+  const [{ lang }, searchParams] = await Promise.all([
+    props.params,
+    props.searchParams,
+  ]);
   const autoSaveUrl = searchParams.save || null;
 
   const supabase = await createClient();
@@ -22,19 +26,12 @@ export default async function DashboardPage(props: {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("preferred_language")
-    .eq("id", user!.id)
-    .single();
-
-  const locale = profile?.preferred_language || "en";
-  const messages = await getMessages(locale);
+  const messages = await getMessages(lang);
 
   return (
     <DashboardContent
       items={items || []}
-      preferredLanguage={locale}
+      preferredLanguage={lang}
       messages={messages}
       autoSaveUrl={autoSaveUrl}
     />

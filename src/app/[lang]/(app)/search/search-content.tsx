@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Search as SearchIcon, Loader2, Globe, FileText, StickyNote, Image as ImageIcon, FileAudio, File } from "lucide-react";
 import { createTranslator } from "@/lib/i18n";
-import type en from "../../../../locales/en.json";
+import type en from "../../../../../locales/en.json";
 
 type Messages = typeof en;
 

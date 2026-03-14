@@ -1,7 +1,13 @@
 import Link from "next/link";
 import { Brain, Globe, Search, Sparkles } from "lucide-react";
 
-export default function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -12,13 +18,13 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-3">
           <Link
-            href="/login"
+            href={`/${lang}/login`}
             className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
           >
             Sign in
           </Link>
           <Link
-            href="/signup"
+            href={`/${lang}/signup`}
             className="px-5 py-2.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
           >
             Get started
@@ -46,7 +52,7 @@ export default function Home() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/signup"
+            href={`/${lang}/signup`}
             className="px-8 py-3.5 text-base font-semibold bg-accent text-accent-foreground rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
           >
             Start saving for free

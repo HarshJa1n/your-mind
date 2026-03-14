@@ -8,25 +8,18 @@ export const dynamic = "force-dynamic";
 export default async function ItemDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ lang: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { lang, id } = await params;
   const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect(`/${lang}/login`);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("preferred_language")
-    .eq("id", user.id)
-    .single();
-
-  const locale = profile?.preferred_language || "en";
-  const messages = await getMessages(locale);
+  const messages = await getMessages(lang);
 
   const { data: item, error } = await supabase
     .from("items")
@@ -37,5 +30,5 @@ export default async function ItemDetailPage({
 
   if (error || !item) notFound();
 
-  return <ItemDetailContent item={item} locale={locale} messages={messages} />;
+  return <ItemDetailContent item={item} locale={lang} messages={messages} />;
 }

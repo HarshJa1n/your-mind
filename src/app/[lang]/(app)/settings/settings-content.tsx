@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createTranslator } from "@/lib/i18n";
-import type en from "../../../../locales/en.json";
+import type en from "../../../../../locales/en.json";
 
 type Messages = typeof en;
 
@@ -24,6 +25,7 @@ export default function SettingsContent({
   messages: Messages;
   initialLanguage: string;
 }) {
+  const params = useParams<{ lang: string }>();
   const [selectedLanguage, setSelectedLanguage] = useState(initialLanguage);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -44,9 +46,8 @@ export default function SettingsContent({
     }
     setSaving(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    // Reload so the UI re-renders with the new locale
-    window.location.reload();
+    // Navigate to the new locale URL — middleware sets cookie on arrival
+    window.location.href = `/${selectedLanguage}/settings`;
   }
 
   return (

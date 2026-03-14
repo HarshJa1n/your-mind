@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@formatjs/intl-localematcher": "^0.8.1",
     "@google/generative-ai": "^0.24.1",
     "@lingo.dev/compiler": "^0.4.0",
     "@supabase/ssr": "^0.9.0",
@@ -20,6 +21,7 @@
     "framer-motion": "^12.36.0",
     "lingo.dev": "^0.133.2",
     "lucide-react": "^0.577.0",
+    "negotiator": "^1.0.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -29,6 +31,7 @@
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/negotiator": "^0.6.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
