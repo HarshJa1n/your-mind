@@ -50,12 +50,16 @@
     "saveFirstItem": "Speichern Sie Ihr erstes Element",
     "itemsCount": "{count} Elemente gespeichert",
     "processing": "Ihr Inhalt wird verarbeitet...",
-    "viewOriginal": "Original anzeigen"
+    "viewOriginal": "Original anzeigen",
+    "allSpaces": "Alle",
+    "loadingMore": "Lade mehr..."
   },
   "saveModal": {
     "title": "In YourMind speichern",
     "urlTab": "URL",
     "noteTab": "Notiz",
+    "imageTab": "Bild",
+    "audioTab": "Audio",
     "urlLabel": "URL einfügen",
     "urlPlaceholder": "https://example.com/article",
     "saveArticle": "Artikel speichern",
@@ -64,7 +68,16 @@
     "noteContentLabel": "Inhalt",
     "noteContentPlaceholder": "Schreiben Sie Ihre Notiz...",
     "saveNote": "Notiz speichern",
-    "saving": "Wird gespeichert..."
+    "saving": "Wird gespeichert...",
+    "dropOrClick": "Datei hier ablegen oder klicken zum Durchsuchen",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — max. 80 Sekunden",
+    "saveImage": "Bild speichern",
+    "saveAudio": "Audio speichern"
+  },
+  "itemDetail": {
+    "viewOriginal": "Original anzeigen",
+    "viewTranslated": "Übersetzung anzeigen"
   },
   "search": {
     "title": "Durchsuchen Sie Ihr Gedächtnis",

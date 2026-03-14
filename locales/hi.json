@@ -50,12 +50,16 @@
     "saveFirstItem": "अपनी पहली आइटम सेव करें",
     "itemsCount": "{count} आइटम सेव किए गए",
     "processing": "आपकी सामग्री को समझा जा रहा है...",
-    "viewOriginal": "मूल देखें"
+    "viewOriginal": "मूल देखें",
+    "allSpaces": "सभी",
+    "loadingMore": "और लोड हो रहा है..."
   },
   "saveModal": {
     "title": "YourMind में सेव करें",
     "urlTab": "URL",
     "noteTab": "नोट",
+    "imageTab": "छवि",
+    "audioTab": "ऑडियो",
     "urlLabel": "एक URL पेस्ट करें",
     "urlPlaceholder": "https://example.com/article",
     "saveArticle": "लेख सेव करें",
@@ -64,7 +68,16 @@
     "noteContentLabel": "सामग्री",
     "noteContentPlaceholder": "अपना नोट लिखें...",
     "saveNote": "नोट सहेजें",
-    "saving": "सहेजा जा रहा है..."
+    "saving": "सहेजा जा रहा है...",
+    "dropOrClick": "फ़ाइल यहाँ छोड़ें या ब्राउज़ करने के लिए क्लिक करें",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — अधिकतम 80 सेकंड",
+    "saveImage": "छवि सहेजें",
+    "saveAudio": "ऑडियो सहेजें"
+  },
+  "itemDetail": {
+    "viewOriginal": "मूल देखें",
+    "viewTranslated": "अनुवादित देखें"
   },
   "search": {
     "title": "अपने मन में खोजें",

@@ -50,12 +50,16 @@
     "saveFirstItem": "最初のアイテムを保存",
     "itemsCount": "{count}件のアイテムを保存済み",
     "processing": "コンテンツを理解しています...",
-    "viewOriginal": "原文を表示"
+    "viewOriginal": "原文を表示",
+    "allSpaces": "すべて",
+    "loadingMore": "さらに読み込んでいます..."
   },
   "saveModal": {
     "title": "YourMindに保存",
     "urlTab": "URL",
     "noteTab": "メモ",
+    "imageTab": "画像",
+    "audioTab": "音声",
     "urlLabel": "URLを貼り付け",
     "urlPlaceholder": "https://example.com/article",
     "saveArticle": "記事を保存",
@@ -64,7 +68,16 @@
     "noteContentLabel": "内容",
     "noteContentPlaceholder": "ノートを書く...",
     "saveNote": "ノートを保存",
-    "saving": "保存中..."
+    "saving": "保存中...",
+    "dropOrClick": "ファイルをここにドロップするか、クリックして参照",
+    "imageHint": "JPEG、PNG、GIF、WebP",
+    "audioHint": "MP3、WAV、M4A — 最大80秒",
+    "saveImage": "画像を保存",
+    "saveAudio": "音声を保存"
+  },
+  "itemDetail": {
+    "viewOriginal": "オリジナルを表示",
+    "viewTranslated": "翻訳を表示"
   },
   "search": {
     "title": "あなたの思考を検索",

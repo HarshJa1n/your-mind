@@ -50,12 +50,16 @@
     "saveFirstItem": "Guarda tu primer elemento",
     "itemsCount": "{count} elementos guardados",
     "processing": "Comprendiendo tu contenido...",
-    "viewOriginal": "Ver original"
+    "viewOriginal": "Ver original",
+    "allSpaces": "Todos",
+    "loadingMore": "Cargando más..."
   },
   "saveModal": {
     "title": "Guardar en YourMind",
     "urlTab": "URL",
     "noteTab": "Nota",
+    "imageTab": "Imagen",
+    "audioTab": "Audio",
     "urlLabel": "Pega una URL",
     "urlPlaceholder": "https://example.com/article",
     "saveArticle": "Guardar artículo",
@@ -64,7 +68,16 @@
     "noteContentLabel": "Contenido",
     "noteContentPlaceholder": "Escribe tu nota...",
     "saveNote": "Guardar nota",
-    "saving": "Guardando..."
+    "saving": "Guardando...",
+    "dropOrClick": "Suelta el archivo aquí o haz clic para explorar",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — máximo 80 segundos",
+    "saveImage": "Guardar imagen",
+    "saveAudio": "Guardar audio"
+  },
+  "itemDetail": {
+    "viewOriginal": "Ver original",
+    "viewTranslated": "Ver traducido"
   },
   "search": {
     "title": "Busca en tu mente",

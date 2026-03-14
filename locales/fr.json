@@ -50,12 +50,16 @@
     "saveFirstItem": "Enregistrez votre premier élément",
     "itemsCount": "{count} éléments enregistrés",
     "processing": "Analyse de votre contenu...",
-    "viewOriginal": "Voir l'original"
+    "viewOriginal": "Voir l'original",
+    "allSpaces": "Tout",
+    "loadingMore": "Chargement en cours..."
   },
   "saveModal": {
     "title": "Enregistrer dans YourMind",
     "urlTab": "URL",
     "noteTab": "Note",
+    "imageTab": "Image",
+    "audioTab": "Audio",
     "urlLabel": "Collez une URL",
     "urlPlaceholder": "https://example.com/article",
     "saveArticle": "Enregistrer l'article",
@@ -64,7 +68,16 @@
     "noteContentLabel": "Contenu",
     "noteContentPlaceholder": "Rédigez votre note...",
     "saveNote": "Enregistrer la note",
-    "saving": "Enregistrement..."
+    "saving": "Enregistrement...",
+    "dropOrClick": "Déposez le fichier ici ou cliquez pour parcourir",
+    "imageHint": "JPEG, PNG, GIF, WebP",
+    "audioHint": "MP3, WAV, M4A — max 80 secondes",
+    "saveImage": "Enregistrer l'image",
+    "saveAudio": "Enregistrer l'audio"
+  },
+  "itemDetail": {
+    "viewOriginal": "Voir l'original",
+    "viewTranslated": "Voir la traduction"
   },
   "search": {
     "title": "Explorez votre esprit",
