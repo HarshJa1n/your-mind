@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "YourMind Web Clipper",
+  "version": "1.0.0",
+  "description": "Save any webpage to your multilingual second brain in one click.",
+  "permissions": ["activeTab"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Save to YourMind"
+  }
+}

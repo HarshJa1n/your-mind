@@ -4,7 +4,12 @@ import { getMessages } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function DashboardPage(props: {
+  searchParams: Promise<{ save?: string; title?: string }>;
+}) {
+  const searchParams = await props.searchParams;
+  const autoSaveUrl = searchParams.save || null;
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -31,6 +36,7 @@ export default async function DashboardPage() {
       items={items || []}
       preferredLanguage={locale}
       messages={messages}
+      autoSaveUrl={autoSaveUrl}
     />
   );
 }

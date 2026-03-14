@@ -21,6 +21,8 @@ import {
   Sparkles,
   ExternalLink,
   Music,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
 import { createTranslator } from "@/lib/i18n";
@@ -61,8 +63,18 @@ const CONTENT_TYPE_COLORS: Record<string, string> = {
   audio: "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300",
 };
 
+const PROCESSING_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes → mark as failed
+
 function isProcessing(item: Item): boolean {
-  return !item.chroma_id && !item.original_summary;
+  if (item.chroma_id || item.original_summary) return false;
+  const age = Date.now() - new Date(item.created_at).getTime();
+  return age < PROCESSING_TIMEOUT_MS;
+}
+
+function isFailed(item: Item): boolean {
+  if (item.chroma_id || item.original_summary) return false;
+  const age = Date.now() - new Date(item.created_at).getTime();
+  return age >= PROCESSING_TIMEOUT_MS;
 }
 
 // ─── File Drop Zone ────────────────────────────────────────────────────────
@@ -411,6 +423,7 @@ function ItemCard({
   const colorClass =
     CONTENT_TYPE_COLORS[item.content_type] || CONTENT_TYPE_COLORS.article;
   const processing = isProcessing(item);
+  const failed = isFailed(item);
   const title =
     item.translated_title || item.original_title || t("common.untitled");
   const summary = item.translated_summary || item.original_summary;
@@ -423,6 +436,24 @@ function ItemCard({
       return null;
     }
   })();
+
+  // Failed items: non-clickable error card
+  if (failed) {
+    return (
+      <div className="block break-inside-avoid bg-card border border-destructive/30 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-2">
+          <AlertCircle className="h-4 w-4 text-destructive/70 shrink-0" />
+          <span className="text-xs font-medium text-destructive/80">Processing failed</span>
+        </div>
+        <p className="text-sm text-muted-foreground line-clamp-1">
+          {item.original_title || "Untitled"}
+        </p>
+        <p className="text-xs text-muted-foreground/50 mt-1">
+          The item timed out. Try saving it again.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Link
@@ -589,20 +620,25 @@ function EmptyState({
 }
 
 // ─── Dashboard Content ─────────────────────────────────────────────────────
+type AutoSaveStatus = "idle" | "saving" | "saved" | "error";
+
 export function DashboardContent({
   items: initialItems,
   preferredLanguage,
   messages,
+  autoSaveUrl,
 }: {
   items: Item[];
   preferredLanguage: string;
   messages: Messages;
+  autoSaveUrl?: string | null;
 }) {
   const [allItems, setAllItems] = useState<Item[]>(initialItems);
   const [hasMore, setHasMore] = useState(initialItems.length >= 20);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const t = createTranslator(messages);
 
@@ -633,6 +669,32 @@ export function DashboardContent({
     const interval = setInterval(fetchLatest, 4000);
     return () => clearInterval(interval);
   }, [hasProcessing, fetchLatest]);
+
+  // ── Auto-save from Chrome extension (?save= param) ────────────────────
+  useEffect(() => {
+    if (!autoSaveUrl) return;
+    setAutoSaveStatus("saving");
+    fetch("/api/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "url", url: autoSaveUrl }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        setAutoSaveStatus("saved");
+        fetchLatest();
+        // Remove ?save= from URL without page reload
+        if (typeof window !== "undefined") {
+          window.history.replaceState({}, "", "/dashboard");
+        }
+        setTimeout(() => setAutoSaveStatus("idle"), 4000);
+      })
+      .catch(() => {
+        setAutoSaveStatus("error");
+        setTimeout(() => setAutoSaveStatus("idle"), 4000);
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSaveUrl]);
 
   // ── Infinite scroll ────────────────────────────────────────────────────
   const loadMore = useCallback(async () => {
@@ -764,6 +826,27 @@ export function DashboardContent({
           }}
           t={t}
         />
+      )}
+
+      {/* Extension auto-save toast */}
+      {autoSaveStatus !== "idle" && (
+        <div
+          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all border
+            ${autoSaveStatus === "saving" ? "bg-card border-border text-foreground" : ""}
+            ${autoSaveStatus === "saved" ? "bg-card border-green-500/40 text-green-600 dark:text-green-400" : ""}
+            ${autoSaveStatus === "error" ? "bg-card border-destructive/40 text-destructive" : ""}
+          `}
+        >
+          {autoSaveStatus === "saving" && (
+            <><Loader2 className="h-4 w-4 animate-spin shrink-0" /> Saving from extension…</>
+          )}
+          {autoSaveStatus === "saved" && (
+            <><CheckCircle2 className="h-4 w-4 shrink-0" /> Saved to YourMind!</>
+          )}
+          {autoSaveStatus === "error" && (
+            <><AlertCircle className="h-4 w-4 shrink-0" /> Failed to save. Try again.</>
+          )}
+        </div>
       )}
     </div>
   );
