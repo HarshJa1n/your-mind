@@ -50,6 +50,8 @@
     "saveFirstItem": "Guarda tu primer elemento",
     "itemsCount": "{count} elementos guardados",
     "processing": "Comprendiendo tu contenido...",
+    "processingFailed": "Error de procesamiento",
+    "processingFailedMsg": "El elemento expiró. Intenta guardarlo nuevamente.",
     "viewOriginal": "Ver original",
     "allSpaces": "Todos",
     "loadingMore": "Cargando más..."
@@ -77,7 +79,10 @@
   },
   "itemDetail": {
     "viewOriginal": "Ver original",
-    "viewTranslated": "Ver traducido"
+    "viewTranslated": "Ver traducido",
+    "translating": "Traduciendo...",
+    "contentLabel": "Contenido",
+    "contentLabelTranslated": "Contenido ({locale})"
   },
   "search": {
     "title": "Busca en tu mente",

@@ -50,6 +50,8 @@
     "saveFirstItem": "Speichern Sie Ihr erstes Element",
     "itemsCount": "{count} Elemente gespeichert",
     "processing": "Ihr Inhalt wird verarbeitet...",
+    "processingFailed": "Verarbeitung fehlgeschlagen",
+    "processingFailedMsg": "Das Element hat das Zeitlimit überschritten. Versuchen Sie, es erneut zu speichern.",
     "viewOriginal": "Original anzeigen",
     "allSpaces": "Alle",
     "loadingMore": "Lade mehr..."
@@ -77,7 +79,10 @@
   },
   "itemDetail": {
     "viewOriginal": "Original anzeigen",
-    "viewTranslated": "Übersetzung anzeigen"
+    "viewTranslated": "Übersetzung anzeigen",
+    "translating": "Wird übersetzt...",
+    "contentLabel": "Inhalt",
+    "contentLabelTranslated": "Inhalt ({locale})"
   },
   "search": {
     "title": "Durchsuchen Sie Ihr Gedächtnis",

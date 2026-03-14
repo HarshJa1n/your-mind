@@ -45,6 +45,8 @@ checksums:
     dashboard/saveFirstItem: cac989b983e4b83355e53a26466dbb2d
     dashboard/itemsCount: 0381b45b1004f08c3a5795637ce863fe
     dashboard/processing: 7a105c945137303f7eb5453bd8f676a7
+    dashboard/processingFailed: 9434e97a0148638510aa8fe75fe45a1e
+    dashboard/processingFailedMsg: 9eed5c61cf4cca951db5191a80171b7c
     dashboard/viewOriginal: 6bf44f3127eaea754aedcc4980b0016e
     dashboard/allSpaces: 5e2e93f8e2a5f315b6fecdd0a0e6f55f
     dashboard/loadingMore: 265b328c20eab0c766521e63b08a774d
@@ -68,6 +70,9 @@ checksums:
     saveModal/saveAudio: 4388af67a46d0d179a122ae9d05cb511
     itemDetail/viewOriginal: 6bf44f3127eaea754aedcc4980b0016e
     itemDetail/viewTranslated: b18027d1af2a18ecf1a4bf0ad1ef765c
+    itemDetail/translating: 602b092655724238f713953e906c9032
+    itemDetail/contentLabel: 669b337031ef165af577f04f2b7fd54f
+    itemDetail/contentLabelTranslated: 49acd58293020474f58ea9a3c48344a1
     search/title: a25b7adaa5b371bfbd5b1eb3aec0bdf8
     search/subtitle: fa589da0f81ab0aa04dc0bfc741d630c
     search/placeholder: ecc5ed313c3588f1001467acdb727f24

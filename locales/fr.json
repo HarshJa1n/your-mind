@@ -50,6 +50,8 @@
     "saveFirstItem": "Enregistrez votre premier élément",
     "itemsCount": "{count} éléments enregistrés",
     "processing": "Analyse de votre contenu...",
+    "processingFailed": "Échec du traitement",
+    "processingFailedMsg": "L'élément a expiré. Essayez de l'enregistrer à nouveau.",
     "viewOriginal": "Voir l'original",
     "allSpaces": "Tout",
     "loadingMore": "Chargement en cours..."
@@ -77,7 +79,10 @@
   },
   "itemDetail": {
     "viewOriginal": "Voir l'original",
-    "viewTranslated": "Voir la traduction"
+    "viewTranslated": "Voir la traduction",
+    "translating": "Traduction en cours...",
+    "contentLabel": "Contenu",
+    "contentLabelTranslated": "Contenu ({locale})"
   },
   "search": {
     "title": "Explorez votre esprit",

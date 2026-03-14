@@ -50,6 +50,8 @@
     "saveFirstItem": "最初のアイテムを保存",
     "itemsCount": "{count}件のアイテムを保存済み",
     "processing": "コンテンツを理解しています...",
+    "processingFailed": "処理に失敗しました",
+    "processingFailedMsg": "アイテムがタイムアウトしました。もう一度保存してください。",
     "viewOriginal": "原文を表示",
     "allSpaces": "すべて",
     "loadingMore": "さらに読み込んでいます..."
@@ -77,7 +79,10 @@
   },
   "itemDetail": {
     "viewOriginal": "オリジナルを表示",
-    "viewTranslated": "翻訳を表示"
+    "viewTranslated": "翻訳を表示",
+    "translating": "翻訳中...",
+    "contentLabel": "コンテンツ",
+    "contentLabelTranslated": "コンテンツ（{locale}）"
   },
   "search": {
     "title": "あなたの思考を検索",

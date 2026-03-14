@@ -50,6 +50,8 @@
     "saveFirstItem": "अपनी पहली आइटम सेव करें",
     "itemsCount": "{count} आइटम सेव किए गए",
     "processing": "आपकी सामग्री को समझा जा रहा है...",
+    "processingFailed": "प्रोसेसिंग विफल रही",
+    "processingFailedMsg": "आइटम का समय समाप्त हो गया। इसे फिर से सेव करने का प्रयास करें।",
     "viewOriginal": "मूल देखें",
     "allSpaces": "सभी",
     "loadingMore": "और लोड हो रहा है..."
@@ -77,7 +79,10 @@
   },
   "itemDetail": {
     "viewOriginal": "मूल देखें",
-    "viewTranslated": "अनुवादित देखें"
+    "viewTranslated": "अनुवादित देखें",
+    "translating": "अनुवाद हो रहा है...",
+    "contentLabel": "सामग्री",
+    "contentLabelTranslated": "सामग्री ({locale})"
   },
   "search": {
     "title": "अपने मन में खोजें",
