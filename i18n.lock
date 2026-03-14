@@ -46,9 +46,13 @@ checksums:
     dashboard/itemsCount: 0381b45b1004f08c3a5795637ce863fe
     dashboard/processing: 7a105c945137303f7eb5453bd8f676a7
     dashboard/viewOriginal: 6bf44f3127eaea754aedcc4980b0016e
+    dashboard/allSpaces: 5e2e93f8e2a5f315b6fecdd0a0e6f55f
+    dashboard/loadingMore: 265b328c20eab0c766521e63b08a774d
     saveModal/title: 4966a67798d1132b8f22ee226a817a04
     saveModal/urlTab: ca97457614226960d41dd18c3c29c86b
     saveModal/noteTab: e0337f202c911423275f834edeffc54b
+    saveModal/imageTab: 048ba7a239de0fbd883ade8558415830
+    saveModal/audioTab: 2be95a0576c5f2dc8c4359afa6cac340
     saveModal/urlLabel: f50f5135f0d2036d75611f4308014343
     saveModal/saveArticle: e606b125bc9a7bc1653ab5bb9159b54a
     saveModal/noteTitleLabel: 344e64395eaff6822a57d18623853e1a
@@ -57,6 +61,13 @@ checksums:
     saveModal/noteContentPlaceholder: b04cfc1dad30cdd3a049ba67dff48f1c
     saveModal/saveNote: ae249b0e134b2e1ead186a8ff2b574e6
     saveModal/saving: 7cb2d8f012d57db8a62187b65ef164dc
+    saveModal/dropOrClick: 0e343ef8ed09d4118651f68de62739d6
+    saveModal/imageHint: 77d4545ae99b9c316d9be13b3c5cb1bf
+    saveModal/audioHint: 1bfaf289bebf1bbeb8fda61cc85f3cc9
+    saveModal/saveImage: 7ce4598ddde7cf329fb54920b48f7251
+    saveModal/saveAudio: 4388af67a46d0d179a122ae9d05cb511
+    itemDetail/viewOriginal: 6bf44f3127eaea754aedcc4980b0016e
+    itemDetail/viewTranslated: b18027d1af2a18ecf1a4bf0ad1ef765c
     search/title: a25b7adaa5b371bfbd5b1eb3aec0bdf8
     search/subtitle: fa589da0f81ab0aa04dc0bfc741d630c
     search/placeholder: ecc5ed313c3588f1001467acdb727f24
