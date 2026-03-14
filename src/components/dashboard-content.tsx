@@ -582,15 +582,17 @@ function ItemCard({
         <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
           <p className="text-xs text-muted-foreground truncate">{sourceHostname}</p>
           {item.source_url && (
-            <a
-              href={item.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(item.source_url!, "_blank", "noopener,noreferrer");
+              }}
               className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+            </button>
           )}
         </div>
       )}

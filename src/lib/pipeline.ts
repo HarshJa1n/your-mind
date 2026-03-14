@@ -132,22 +132,28 @@ async function processURLBackground({
       preferredLanguage
     );
 
-    // 4. Embed text + store in Chroma
-    const collection = await getUserCollection(userId);
-    await collection.add({
-      ids: [itemId],
-      documents: [textToEmbed],
-      metadatas: [
-        {
-          supabaseId: itemId,
-          userId,
-          contentType: "article",
-          url,
-        },
-      ],
-    });
+    // 4. Embed text + store in Chroma (optional — don't block Supabase update)
+    let chromaId: string | null = null;
+    try {
+      const collection = await getUserCollection(userId);
+      await collection.add({
+        ids: [itemId],
+        documents: [textToEmbed],
+        metadatas: [
+          {
+            supabaseId: itemId,
+            userId,
+            contentType: "article",
+            url,
+          },
+        ],
+      });
+      chromaId = itemId;
+    } catch (chromaErr) {
+      console.warn("Chroma embedding failed (search will use text fallback):", chromaErr);
+    }
 
-    // 5. Update Supabase with full metadata
+    // 5. Update Supabase with full metadata — always runs even if Chroma failed
     await supabase
       .from("items")
       .update({
@@ -162,7 +168,7 @@ async function processURLBackground({
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
         thumbnail_url: image,
-        chroma_id: itemId,
+        chroma_id: chromaId,
       })
       .eq("id", itemId);
   } catch (err) {
@@ -246,15 +252,21 @@ async function processNoteBackground({
       preferredLanguage
     );
 
-    // Embed + store in Chroma
-    const collection = await getUserCollection(userId);
-    await collection.add({
-      ids: [itemId],
-      documents: [textToEmbed],
-      metadatas: [{ supabaseId: itemId, userId, contentType: "note" }],
-    });
+    // Embed + store in Chroma (optional)
+    let chromaId: string | null = null;
+    try {
+      const collection = await getUserCollection(userId);
+      await collection.add({
+        ids: [itemId],
+        documents: [textToEmbed],
+        metadatas: [{ supabaseId: itemId, userId, contentType: "note" }],
+      });
+      chromaId = itemId;
+    } catch (chromaErr) {
+      console.warn("Chroma embedding failed (search will use text fallback):", chromaErr);
+    }
 
-    // Update Supabase
+    // Update Supabase — always runs
     await supabase
       .from("items")
       .update({
@@ -266,7 +278,7 @@ async function processNoteBackground({
         auto_tags: translatedTags,
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
-        chroma_id: itemId,
+        chroma_id: chromaId,
       })
       .eq("id", itemId);
   } catch (err) {
@@ -344,12 +356,18 @@ async function processImageBackground({
     const translatedTags = await translateTags(aiResult.tags, "en", preferredLanguage);
 
     const textToEmbed = `${aiResult.title}\n\n${aiResult.description}\n\n${aiResult.summary}`;
-    const collection = await getUserCollection(userId);
-    await collection.add({
-      ids: [itemId],
-      documents: [textToEmbed],
-      metadatas: [{ supabaseId: itemId, userId, contentType: "image" }],
-    });
+    let chromaId: string | null = null;
+    try {
+      const collection = await getUserCollection(userId);
+      await collection.add({
+        ids: [itemId],
+        documents: [textToEmbed],
+        metadatas: [{ supabaseId: itemId, userId, contentType: "image" }],
+      });
+      chromaId = itemId;
+    } catch (chromaErr) {
+      console.warn("Chroma embedding failed (search will use text fallback):", chromaErr);
+    }
 
     // Upload to Supabase Storage (requires 'uploads' bucket with public access)
     let thumbnailUrl: string | null = null;
@@ -382,7 +400,7 @@ async function processImageBackground({
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
         thumbnail_url: thumbnailUrl,
-        chroma_id: itemId,
+        chroma_id: chromaId,
       })
       .eq("id", itemId);
   } catch (err) {
@@ -456,13 +474,20 @@ async function processAudioBackground({
     );
 
     const textToEmbed = `${aiResult.title}\n\n${aiResult.transcript}\n\n${aiResult.summary}`;
-    const collection = await getUserCollection(userId);
-    await collection.add({
-      ids: [itemId],
-      documents: [textToEmbed],
-      metadatas: [{ supabaseId: itemId, userId, contentType: "audio" }],
-    });
+    let chromaId: string | null = null;
+    try {
+      const collection = await getUserCollection(userId);
+      await collection.add({
+        ids: [itemId],
+        documents: [textToEmbed],
+        metadatas: [{ supabaseId: itemId, userId, contentType: "audio" }],
+      });
+      chromaId = itemId;
+    } catch (chromaErr) {
+      console.warn("Chroma embedding failed (search will use text fallback):", chromaErr);
+    }
 
+    // Update Supabase — always runs
     await supabase
       .from("items")
       .update({
@@ -476,7 +501,7 @@ async function processAudioBackground({
         auto_tags: translatedTags,
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
-        chroma_id: itemId,
+        chroma_id: chromaId,
       })
       .eq("id", itemId);
   } catch (err) {
