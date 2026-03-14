@@ -50,6 +50,8 @@
     "saveFirstItem": "Save your first item",
     "itemsCount": "{count} items saved",
     "processing": "Understanding your content...",
+    "processingFailed": "Processing failed",
+    "processingFailedMsg": "The item timed out. Try saving it again.",
     "viewOriginal": "View original",
     "allSpaces": "All",
     "loadingMore": "Loading more..."
@@ -77,7 +79,10 @@
   },
   "itemDetail": {
     "viewOriginal": "View original",
-    "viewTranslated": "View translated"
+    "viewTranslated": "View translated",
+    "translating": "Translating...",
+    "contentLabel": "Content",
+    "contentLabelTranslated": "Content ({locale})"
   },
   "search": {
     "title": "Search your mind",

@@ -81,12 +81,14 @@ function isFailed(item: Item): boolean {
 function FileDropZone({
   accept,
   hint,
+  label,
   file,
   onFileSelect,
   icon: Icon,
 }: {
   accept: string;
   hint: string;
+  label: string;
   file: File | null;
   onFileSelect: (file: File) => void;
   icon: React.ComponentType<{ className?: string }>;
@@ -130,7 +132,7 @@ function FileDropZone({
       ) : (
         <div>
           <Icon className="h-8 w-8 mx-auto mb-2 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground">Drop here or click to browse</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
           <p className="text-xs text-muted-foreground/60 mt-1">{hint}</p>
         </div>
       )}
@@ -358,6 +360,7 @@ function SaveModal({
               <FileDropZone
                 accept="image/jpeg,image/png,image/gif,image/webp"
                 hint={t("saveModal.imageHint")}
+                label={t("saveModal.dropOrClick")}
                 file={imageFile}
                 onFileSelect={setImageFile}
                 icon={ImageIcon}
@@ -385,6 +388,7 @@ function SaveModal({
               <FileDropZone
                 accept="audio/mpeg,audio/mp3,audio/wav,audio/m4a,audio/mp4"
                 hint={t("saveModal.audioHint")}
+                label={t("saveModal.dropOrClick")}
                 file={audioFile}
                 onFileSelect={setAudioFile}
                 icon={FileAudio}
@@ -414,9 +418,11 @@ function SaveModal({
 // ─── Item Card ─────────────────────────────────────────────────────────────
 function ItemCard({
   item,
+  locale,
   t,
 }: {
   item: Item;
+  locale: string;
   t: ReturnType<typeof createTranslator>;
 }) {
   const Icon = CONTENT_TYPE_ICONS[item.content_type] || FileText;
@@ -443,13 +449,13 @@ function ItemCard({
       <div className="block break-inside-avoid bg-card border border-destructive/30 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-2">
           <AlertCircle className="h-4 w-4 text-destructive/70 shrink-0" />
-          <span className="text-xs font-medium text-destructive/80">Processing failed</span>
+          <span className="text-xs font-medium text-destructive/80">{t("dashboard.processingFailed")}</span>
         </div>
         <p className="text-sm text-muted-foreground line-clamp-1">
-          {item.original_title || "Untitled"}
+          {item.original_title || t("common.untitled")}
         </p>
         <p className="text-xs text-muted-foreground/50 mt-1">
-          The item timed out. Try saving it again.
+          {t("dashboard.processingFailedMsg")}
         </p>
       </div>
     );
@@ -457,7 +463,7 @@ function ItemCard({
 
   return (
     <Link
-      href={`/items/${item.id}`}
+      href={`/${locale}/items/${item.id}`}
       className={`block break-inside-avoid bg-card border rounded-xl p-5 transition-all cursor-pointer group
         ${
           processing
@@ -520,7 +526,7 @@ function ItemCard({
           className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${colorClass}`}
         >
           <Icon className="h-3 w-3" />
-          {item.content_type}
+          {t(`contentTypes.${item.content_type}`)}
         </span>
         {!processing &&
           item.original_language &&
@@ -685,7 +691,7 @@ export function DashboardContent({
         fetchLatest();
         // Remove ?save= from URL without page reload
         if (typeof window !== "undefined") {
-          window.history.replaceState({}, "", "/dashboard");
+          window.history.replaceState({}, "", `/${preferredLanguage}/dashboard`);
         }
         setTimeout(() => setAutoSaveStatus("idle"), 4000);
       })
@@ -801,7 +807,7 @@ export function DashboardContent({
         <>
           <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
             {filteredItems.map((item) => (
-              <ItemCard key={item.id} item={item} t={t} />
+              <ItemCard key={item.id} item={item} locale={preferredLanguage} t={t} />
             ))}
           </div>
 

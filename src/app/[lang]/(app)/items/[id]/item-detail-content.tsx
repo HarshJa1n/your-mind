@@ -113,7 +113,7 @@ export default function ItemDetailContent({
     <div className="max-w-3xl mx-auto p-8">
       {/* Back */}
       <Link
-        href="/dashboard"
+        href={`/${locale}/dashboard`}
         className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -135,7 +135,7 @@ export default function ItemDetailContent({
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${colorClass}`}>
           <Icon className="h-3 w-3" />
-          {item.content_type}
+          {t(`contentTypes.${item.content_type}`)}
         </span>
         {needsContentTranslation && (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground bg-muted">
@@ -192,14 +192,14 @@ export default function ItemDetailContent({
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               {translatedContent && !showOriginal
-                ? `Content (${locale.toUpperCase()})`
-                : "Content"}
+                ? t("itemDetail.contentLabelTranslated", { locale: locale.toUpperCase() })
+                : t("itemDetail.contentLabel")}
             </h2>
             <div className="flex items-center gap-3">
               {needsContentTranslation && translating && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  Translating...
+                  {t("itemDetail.translating")}
                 </span>
               )}
               {translatedContent && needsContentTranslation && !translating && (
