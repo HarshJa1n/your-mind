@@ -12,11 +12,13 @@
       }
 
       body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           sans-serif;
         width: 320px;
-        background: #0f0f0f;
-        color: #f5f5f5;
+        background:
+          radial-gradient(circle at top right, rgba(255, 0, 140, 0.2), transparent 28%),
+          linear-gradient(180deg, #fff9fd, #fff1f8);
+        color: #180811;
         overflow: hidden;
       }
 
@@ -28,48 +30,59 @@
       .header {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
         margin-bottom: 18px;
       }
 
       .logo {
-        width: 28px;
-        height: 28px;
-        background: linear-gradient(135deg, #a78bfa, #7c3aed);
-        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
         flex-shrink: 0;
+        overflow: hidden;
+        box-shadow: 0 12px 28px rgba(255, 0, 140, 0.18);
+      }
+
+      .logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       .brand {
         font-size: 15px;
         font-weight: 700;
         letter-spacing: -0.3px;
-        color: #f5f5f5;
+        color: #180811;
       }
 
       .tagline {
         font-size: 10px;
-        color: #666;
+        color: #8d5b76;
         margin-left: auto;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
       }
 
       /* ── Page info card ── */
       .page-card {
-        background: #1a1a1a;
-        border: 1px solid #2a2a2a;
-        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(24, 8, 17, 0.08);
+        border-radius: 18px;
         padding: 12px 14px;
         margin-bottom: 14px;
+        box-shadow:
+          0 18px 50px rgba(56, 10, 38, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
       }
 
       .page-title {
         font-size: 13px;
         font-weight: 600;
-        color: #e5e5e5;
+        color: #220d18;
         line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -80,7 +93,7 @@
 
       .page-url {
         font-size: 11px;
-        color: #666;
+        color: #8d5b76;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -90,10 +103,10 @@
       .save-btn {
         width: 100%;
         padding: 11px;
-        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        background: linear-gradient(135deg, #1b0913, #7a0050 55%, #ff008c);
         color: #fff;
         border: none;
-        border-radius: 10px;
+        border-radius: 14px;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
@@ -137,21 +150,21 @@
       }
 
       .status.saving {
-        background: #1e1b4b;
-        color: #a78bfa;
-        border: 1px solid #312e81;
+        background: rgba(255, 255, 255, 0.72);
+        color: #180811;
+        border: 1px solid rgba(24, 8, 17, 0.08);
       }
 
       .status.saved {
-        background: #052e16;
+        background: rgba(255, 255, 255, 0.72);
         color: #4ade80;
-        border: 1px solid #14532d;
+        border: 1px solid rgba(20, 83, 45, 0.18);
       }
 
       .status.error {
-        background: #2d0909;
+        background: rgba(255, 255, 255, 0.72);
         color: #f87171;
-        border: 1px solid #450a0a;
+        border: 1px solid rgba(69, 10, 10, 0.14);
       }
 
       /* ── Footer ── */
@@ -165,18 +178,18 @@
 
       .footer-link {
         font-size: 11px;
-        color: #444;
+        color: #8d5b76;
         cursor: pointer;
         text-decoration: none;
         transition: color 0.15s;
       }
 
       .footer-link:hover {
-        color: #888;
+        color: #180811;
       }
 
       .dot {
-        color: #333;
+        color: #d2adbf;
         font-size: 10px;
       }
 
@@ -202,7 +215,9 @@
     <div class="container">
       <!-- Header -->
       <div class="header">
-        <div class="logo">🧠</div>
+        <div class="logo">
+          <img src="logo.png" alt="YourMind logo" />
+        </div>
         <span class="brand">YourMind</span>
         <span class="tagline">Web Clipper</span>
       </div>

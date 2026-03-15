@@ -26,6 +26,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { createTranslator } from "@/lib/i18n";
+import { BrandLogo } from "@/components/brand-logo";
+import { GlowCard } from "@/components/ui/glow-card";
+import { cn } from "@/lib/utils";
 import type en from "../../locales/en.json";
 
 type Messages = typeof en;
@@ -110,9 +113,11 @@ function FileDropZone({
         if (f) onFileSelect(f);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
-        ${dragOver ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"}
-        ${file ? "border-green-500/50 bg-green-50/10 dark:bg-green-950/10" : ""}`}
+      className={cn(
+        "glass-panel rounded-[1.35rem] border-2 border-dashed p-6 text-center",
+        dragOver ? "border-accent bg-accent/5" : "hover:border-accent/50",
+        file ? "border-green-500/50 bg-green-50/10" : ""
+      )}
     >
       <input
         ref={inputRef}
@@ -232,18 +237,26 @@ function SaveModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(21,6,14,0.55)] backdrop-blur-md p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl">
+      <GlowCard className="w-full max-w-xl">
+        <div className="w-full p-1">
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-lg font-semibold">{t("saveModal.title")}</h2>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              Capture
+            </p>
+            <h2 className="font-display text-2xl font-bold tracking-[-0.04em]">
+              {t("saveModal.title")}
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded-lg hover:bg-secondary"
+            className="glass-panel flex h-10 w-10 items-center justify-center rounded-2xl text-muted-foreground hover:text-foreground"
             aria-label={t("common.close")}
           >
             <X className="h-4 w-4" />
@@ -251,14 +264,14 @@ function SaveModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mx-6 p-1 bg-secondary rounded-xl mb-0">
+        <div className="mx-6 mb-0 flex gap-1 rounded-[1.2rem] bg-secondary/70 p-1.5">
           {TABS.map(({ key, icon: Icon, label }) => (
             <button
               key={key}
               onClick={() => setMode(key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-medium transition-all ${
                 mode === key
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-white text-foreground shadow-[0_10px_24px_rgba(31,7,26,0.08)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -285,14 +298,14 @@ function SaveModal({
                   required
                   autoFocus
                   placeholder={t("saveModal.urlPlaceholder")}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="glass-panel w-full rounded-2xl px-4 py-3 focus:outline-none"
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -320,7 +333,7 @@ function SaveModal({
                   required
                   autoFocus
                   placeholder={t("saveModal.noteTitlePlaceholder")}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="glass-panel w-full rounded-2xl px-4 py-3 focus:outline-none"
                 />
               </div>
               <div>
@@ -334,14 +347,14 @@ function SaveModal({
                   required
                   rows={5}
                   placeholder={t("saveModal.noteContentPlaceholder")}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  className="glass-panel w-full rounded-2xl px-4 py-3 focus:outline-none resize-none"
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -369,7 +382,7 @@ function SaveModal({
               <button
                 onClick={() => handleSaveFile("image")}
                 disabled={loading || !imageFile}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -397,7 +410,7 @@ function SaveModal({
               <button
                 onClick={() => handleSaveFile("audio")}
                 disabled={loading || !audioFile}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -410,7 +423,8 @@ function SaveModal({
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </GlowCard>
     </div>
   );
 }
@@ -446,7 +460,7 @@ function ItemCard({
   // Failed items: non-clickable error card
   if (failed) {
     return (
-      <div className="block break-inside-avoid bg-card border border-destructive/30 rounded-xl p-5">
+      <GlowCard className="mb-4 block break-inside-avoid" innerClassName="p-5 border-destructive/20">
         <div className="flex items-center gap-2 mb-2">
           <AlertCircle className="h-4 w-4 text-destructive/70 shrink-0" />
           <span className="text-xs font-medium text-destructive/80">{t("dashboard.processingFailed")}</span>
@@ -457,23 +471,23 @@ function ItemCard({
         <p className="text-xs text-muted-foreground/50 mt-1">
           {t("dashboard.processingFailedMsg")}
         </p>
-      </div>
+      </GlowCard>
     );
   }
 
   return (
-    <Link
-      href={`/${locale}/items/${item.id}`}
-      className={`block break-inside-avoid bg-card border rounded-xl p-5 transition-all cursor-pointer group
-        ${
-          processing
-            ? "border-accent/30 animate-pulse-soft pointer-events-none"
-            : "border-border hover:shadow-md hover:border-border/80"
-        }`}
+    <GlowCard
+      className="mb-4 block break-inside-avoid"
+      innerClassName={cn(
+        "p-5 transition-all group",
+        processing && "animate-pulse-soft",
+        processing && "pointer-events-none"
+      )}
     >
+      <Link href={`/${locale}/items/${item.id}`} className="block">
       {/* Image thumbnail */}
       {item.content_type === "image" && item.thumbnail_url && !processing && (
-        <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
+        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-[1.2rem] bg-muted">
           <img
             src={item.thumbnail_url}
             alt=""
@@ -485,7 +499,7 @@ function ItemCard({
 
       {/* Article thumbnail */}
       {item.content_type !== "image" && item.thumbnail_url && !processing && (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-4 bg-muted">
+        <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-[1.2rem] bg-muted">
           <img
             src={item.thumbnail_url}
             alt=""
@@ -497,7 +511,7 @@ function ItemCard({
 
       {/* Audio placeholder */}
       {item.content_type === "audio" && !processing && (
-        <div className="w-full h-14 rounded-lg mb-4 bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center gap-2">
+        <div className="mb-4 flex h-16 w-full items-center justify-center gap-2 rounded-[1.2rem] bg-[linear-gradient(135deg,rgba(255,0,140,0.08),rgba(255,255,255,0.7))]">
           <Music className="h-5 w-5 text-purple-500" />
           <div className="flex items-end gap-0.5 h-6">
             {[3, 5, 4, 6, 3, 5, 4].map((h, i) => (
@@ -513,7 +527,7 @@ function ItemCard({
 
       {/* Processing state */}
       {processing && (
-        <div className="w-full aspect-video rounded-lg mb-4 bg-muted/60 flex items-center justify-center">
+        <div className="mb-4 flex aspect-video w-full items-center justify-center rounded-[1.2rem] bg-muted/60">
           <Sparkles
             className="h-6 w-6 text-accent/50 animate-spin"
             style={{ animationDuration: "3s" }}
@@ -522,30 +536,28 @@ function ItemCard({
       )}
 
       <div className="flex items-center gap-2 mb-3">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${colorClass}`}
-        >
+        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold ${colorClass}`}>
           <Icon className="h-3 w-3" />
           {t(`contentTypes.${item.content_type}`)}
         </span>
         {!processing &&
           item.original_language &&
           item.original_language !== item.translated_language && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground bg-muted">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1.5 text-xs text-muted-foreground">
               <Globe className="h-3 w-3" />
               {item.original_language.toUpperCase()} →{" "}
               {item.translated_language?.toUpperCase()}
             </span>
           )}
         {processing && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs text-accent bg-accent/10 font-medium">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent">
             <Loader2 className="h-3 w-3 animate-spin" />
             {t("dashboard.processing")}
           </span>
         )}
       </div>
 
-      <h3 className="font-semibold text-sm leading-snug mb-2 line-clamp-2 group-hover:text-accent transition-colors">
+      <h3 className="font-display mb-2 text-xl font-bold leading-snug tracking-[-0.04em] group-hover:text-accent">
         {processing ? (
           <span className="inline-block w-3/4 h-4 bg-muted rounded animate-pulse" />
         ) : (
@@ -566,11 +578,11 @@ function ItemCard({
       ) : null}
 
       {!processing && item.auto_tags && item.auto_tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="mb-3 flex flex-wrap gap-1.5">
           {item.auto_tags.slice(0, 3).map((tag) => (
             <span
               key={tag}
-              className="px-2 py-0.5 rounded-md text-xs bg-secondary text-secondary-foreground"
+              className="rounded-full bg-white/70 px-3 py-1 text-xs text-secondary-foreground"
             >
               {tag}
             </span>
@@ -579,7 +591,7 @@ function ItemCard({
       )}
 
       {sourceHostname && (
-        <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-3">
           <p className="text-xs text-muted-foreground truncate">{sourceHostname}</p>
           {item.source_url && (
             <button
@@ -596,7 +608,8 @@ function ItemCard({
           )}
         </div>
       )}
-    </Link>
+      </Link>
+    </GlowCard>
   );
 }
 
@@ -609,21 +622,23 @@ function EmptyState({
   t: ReturnType<typeof createTranslator>;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-20 h-20 rounded-2xl bg-secondary flex items-center justify-center mb-6">
+    <GlowCard className="mx-auto max-w-2xl">
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[1.8rem] bg-[linear-gradient(135deg,#1b0913,#ff008c)] text-white shadow-[0_20px_44px_rgba(255,0,140,0.24)]">
         <Plus className="h-9 w-9 text-muted-foreground" />
       </div>
-      <h2 className="text-xl font-semibold mb-2">{t("dashboard.emptyTitle")}</h2>
+      <h2 className="font-display mb-2 text-3xl font-bold tracking-[-0.04em]">{t("dashboard.emptyTitle")}</h2>
       <p className="text-muted-foreground max-w-sm mb-8 leading-relaxed">
         {t("dashboard.emptySubtitle")}
       </p>
       <button
         onClick={onAdd}
-        className="px-6 py-3 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+        className="inline-flex min-h-12 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-6 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)]"
       >
         {t("dashboard.saveFirstItem")}
       </button>
-    </div>
+      </div>
+    </GlowCard>
   );
 }
 
@@ -753,12 +768,15 @@ export function DashboardContent({
       : allItems.filter((i) => i.content_category === activeCategory);
 
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <div className="mb-3 lg:hidden">
+            <BrandLogo href={`/${preferredLanguage}/dashboard`} size="sm" />
+          </div>
+          <h1 className="font-display text-4xl font-bold tracking-[-0.05em]">{t("dashboard.title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             {allItems.length === 0
               ? t("dashboard.emptySubtitle")
               : t("dashboard.itemsCount", { count: allItems.length })}
@@ -766,7 +784,7 @@ export function DashboardContent({
         </div>
         <button
           onClick={() => setShowSaveModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground font-medium text-sm hover:opacity-90 transition-opacity cursor-pointer"
+          className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)]"
         >
           <Plus className="h-4 w-4" />
           {t("nav.saveNew")}
@@ -775,13 +793,13 @@ export function DashboardContent({
 
       {/* Smart Spaces filter chips */}
       {categories.length > 0 && (
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
+        <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setActiveCategory("all")}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer border ${
+            className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium transition-all border ${
               activeCategory === "all"
-                ? "bg-accent text-accent-foreground border-accent"
-                : "bg-secondary text-secondary-foreground border-transparent hover:border-border"
+                ? "bg-accent text-accent-foreground border-accent shadow-[0_14px_30px_rgba(255,0,140,0.18)]"
+                : "glass-panel text-secondary-foreground border-transparent"
             }`}
           >
             {t("dashboard.allSpaces")}
@@ -790,10 +808,10 @@ export function DashboardContent({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all cursor-pointer border ${
+              className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium capitalize transition-all border ${
                 activeCategory === cat
-                  ? "bg-accent text-accent-foreground border-accent"
-                  : "bg-secondary text-secondary-foreground border-transparent hover:border-border"
+                  ? "bg-accent text-accent-foreground border-accent shadow-[0_14px_30px_rgba(255,0,140,0.18)]"
+                  : "glass-panel text-secondary-foreground border-transparent"
               }`}
             >
               {cat}
@@ -807,7 +825,7 @@ export function DashboardContent({
         <EmptyState onAdd={() => setShowSaveModal(true)} t={t} />
       ) : (
         <>
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+          <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3 xl:columns-4">
             {filteredItems.map((item) => (
               <ItemCard key={item.id} item={item} locale={preferredLanguage} t={t} />
             ))}
@@ -839,10 +857,10 @@ export function DashboardContent({
       {/* Extension auto-save toast */}
       {autoSaveStatus !== "idle" && (
         <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all border
-            ${autoSaveStatus === "saving" ? "bg-card border-border text-foreground" : ""}
-            ${autoSaveStatus === "saved" ? "bg-card border-green-500/40 text-green-600 dark:text-green-400" : ""}
-            ${autoSaveStatus === "error" ? "bg-card border-destructive/40 text-destructive" : ""}
+          className={`glass-panel fixed bottom-5 right-5 z-50 flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium transition-all border
+            ${autoSaveStatus === "saving" ? "text-foreground" : ""}
+            ${autoSaveStatus === "saved" ? "border-green-500/40 text-green-600 dark:text-green-400" : ""}
+            ${autoSaveStatus === "error" ? "border-destructive/40 text-destructive" : ""}
           `}
         >
           {autoSaveStatus === "saving" && (

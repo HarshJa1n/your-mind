@@ -29,9 +29,11 @@ export default async function AppLayout({
   const messages = await getMessages(lang);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="app-shell min-h-screen lg:flex">
       <Sidebar user={user} profile={profile} messages={messages} lang={lang} />
-      <main className="flex-1 min-h-screen">{children}</main>
+      <main className="min-h-screen flex-1 px-4 pb-8 pt-4 lg:px-0 lg:pb-10 lg:pr-5 lg:pt-5">
+        {children}
+      </main>
     </div>
   );
 }

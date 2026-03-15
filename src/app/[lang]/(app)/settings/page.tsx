@@ -11,9 +11,7 @@ export default async function SettingsPage({
 }) {
   const { lang } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  await supabase.auth.getUser();
 
   const messages = await getMessages(lang);
 

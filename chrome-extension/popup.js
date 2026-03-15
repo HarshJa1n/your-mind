@@ -28,11 +28,6 @@ function showStatus(type, message) {
       : message;
 }
 
-function hideStatus() {
-  statusEl.className = "status hidden";
-  statusEl.textContent = "";
-}
-
 function truncate(str, max) {
   return str && str.length > max ? str.slice(0, max) + "…" : str || "";
 }

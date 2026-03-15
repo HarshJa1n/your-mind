@@ -1,8 +1,9 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { Globe } from "lucide-react";
+import { ChevronDown, Globe } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 const SUPPORTED = [
   { code: "en", label: "EN", native: "English" },
@@ -42,24 +43,40 @@ export function LanguageSwitcher({ currentLang }: { currentLang: string }) {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors cursor-pointer"
+        className="glass-panel flex min-h-11 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-foreground/80 hover:text-foreground"
         aria-label="Switch language"
       >
-        <Globe className="h-3.5 w-3.5" />
+        <Globe className="h-4 w-4 text-accent" />
         <span>{current.label}</span>
+        <ChevronDown
+          className={cn("h-3.5 w-3.5 text-muted-foreground", open && "rotate-180")}
+        />
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-1 w-40 bg-card border border-border rounded-xl shadow-lg overflow-hidden z-50">
+        <div className="glass-panel absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-2xl p-1.5">
           {SUPPORTED.map((lang) => (
             <button
               key={lang.code}
               onClick={() => switchTo(lang.code)}
-              className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-secondary transition-colors cursor-pointer
-                ${lang.code === currentLang ? "text-accent font-medium bg-accent/5" : "text-foreground"}`}
+              className={cn(
+                "flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm",
+                lang.code === currentLang
+                  ? "bg-accent text-accent-foreground"
+                  : "text-foreground hover:bg-white/70"
+              )}
             >
               <span>{lang.native}</span>
-              <span className="text-xs text-muted-foreground">{lang.label}</span>
+              <span
+                className={cn(
+                  "text-xs",
+                  lang.code === currentLang
+                    ? "text-accent-foreground/75"
+                    : "text-muted-foreground"
+                )}
+              >
+                {lang.label}
+              </span>
             </button>
           ))}
         </div>

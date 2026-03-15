@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 
 // Replicate the helpers here to test them in isolation
 // (They're defined inside the component file, so we test the logic directly)

@@ -11,11 +11,9 @@ export default async function SearchPage({
 }) {
   const { lang } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  await supabase.auth.getUser();
 
   const messages = await getMessages(lang);
 
-  return <SearchContent messages={messages} />;
+  return <SearchContent messages={messages} locale={lang} />;
 }
