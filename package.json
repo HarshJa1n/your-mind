@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.8.1",
+    "@google/genai": "^1.45.0",
     "@google/generative-ai": "^0.24.1",
     "@lingo.dev/compiler": "^0.4.0",
     "@supabase/ssr": "^0.9.0",

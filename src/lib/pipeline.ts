@@ -17,10 +17,12 @@
 
 import { getUserCollection } from "./chroma";
 import {
+  extractArticleMetadata,
   extractArticleContent,
   processWithGemini,
   processImageWithGemini,
   processAudioWithGemini,
+  processUrlWithGeminiContext,
 } from "./gemini";
 import { translateMeta, translateTags } from "./lingo";
 import { createClient as createSupabaseClient } from "./supabase/server";
@@ -102,20 +104,56 @@ async function processURLBackground({
   const supabase = await createSupabaseClient();
 
   try {
-    // 1. Extract article content
-    const { title, content, description, image } =
-      await extractArticleContent(url);
-    const textToEmbed = `${title}\n\n${description}\n\n${content}`.substring(
-      0,
-      10000
-    );
+    let title: string;
+    let content: string;
+    let description: string;
+    let image: string | null;
+    let aiResult: Awaited<ReturnType<typeof processWithGemini>>;
 
-    // 2. AI Processing: summary, tags, category, language detection
-    const aiResult = await processWithGemini(
-      textToEmbed,
-      title,
-      preferredLanguage
-    );
+    // 1. Prefer Gemini URL Context so Gemini can fetch/index the page directly.
+    const urlContextResult = await processUrlWithGeminiContext(url);
+
+    if (urlContextResult) {
+      title = urlContextResult.title;
+      content = urlContextResult.content;
+      description = urlContextResult.description;
+      image = urlContextResult.image;
+      aiResult = {
+        title: urlContextResult.title,
+        summary: urlContextResult.summary,
+        tags: urlContextResult.tags,
+        category: urlContextResult.category,
+        detectedLanguage: urlContextResult.detectedLanguage,
+      };
+
+      // If URL Context skips OG metadata, do a light fetch to recover title/image.
+      if (!image || !description) {
+        const metadata = await extractArticleMetadata(url);
+        title = title || metadata.title;
+        description = description || metadata.description;
+        image = image || metadata.image;
+      }
+    } else {
+      // Fallback: local fetch + scrape + Gemini analysis.
+      const extracted = await extractArticleContent(url);
+      title = extracted.title;
+      content = extracted.content;
+      description = extracted.description;
+      image = extracted.image;
+
+      const textForAnalysis = `${title}\n\n${description}\n\n${content}`.substring(
+        0,
+        10000
+      );
+
+      aiResult = await processWithGemini(
+        textForAnalysis,
+        title,
+        preferredLanguage
+      );
+    }
+
+    const textToEmbed = `${title}\n\n${description}\n\n${content}`.substring(0, 10000);
 
     // 3. Translate title + summary via Lingo.dev SDK (Layer 2)
     const { title: translatedTitle, summary: translatedSummary } =
@@ -344,6 +382,7 @@ async function processImageBackground({
   preferredLanguage: string;
 }) {
   const supabase = await createSupabaseClient();
+  void fileName;
   try {
     const aiResult = await processImageWithGemini(buffer, mimeType, preferredLanguage);
 
@@ -458,6 +497,7 @@ async function processAudioBackground({
   preferredLanguage: string;
 }) {
   const supabase = await createSupabaseClient();
+  void fileName;
   try {
     const aiResult = await processAudioWithGemini(buffer, mimeType, preferredLanguage);
 

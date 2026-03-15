@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 let _genAI: GoogleGenerativeAI | null = null;
+let _urlContextAI: GoogleGenAI | null = null;
 
 function getGenAI(): GoogleGenerativeAI {
   if (!_genAI) {
@@ -9,12 +11,166 @@ function getGenAI(): GoogleGenerativeAI {
   return _genAI;
 }
 
+function getUrlContextAI(): GoogleGenAI {
+  if (!_urlContextAI) {
+    _urlContextAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  }
+  return _urlContextAI;
+}
+
 export interface AIProcessingResult {
   summary: string;
   tags: string[];
   category: string;
   detectedLanguage: string;
   title: string;
+}
+
+export interface URLContextArticleResult extends AIProcessingResult {
+  content: string;
+  description: string;
+  image: string | null;
+  retrievedUrls: Array<{
+    retrievedUrl: string;
+    urlRetrievalStatus: string;
+  }>;
+}
+
+function normalizeJsonText(text: string): string {
+  return text
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+}
+
+function resolveUrl(value: string | null | undefined, baseUrl: string): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value, baseUrl).toString();
+  } catch {
+    return value;
+  }
+}
+
+async function fetchUrlHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
+    },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  return res.text();
+}
+
+function parseArticleMetadata(html: string, url: string) {
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const ogTitleMatch = html.match(
+    /<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i
+  );
+  const ogDescMatch = html.match(
+    /<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i
+  );
+  const descMatch = html.match(
+    /<meta[^>]*name="description"[^>]*content="([^"]+)"/i
+  );
+  const ogImageMatch = html.match(
+    /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i
+  );
+
+  return {
+    title: (ogTitleMatch?.[1] || titleMatch?.[1] || url).trim(),
+    description: ogDescMatch?.[1] || descMatch?.[1] || "",
+    image: resolveUrl(ogImageMatch?.[1] || null, url),
+  };
+}
+
+export async function extractArticleMetadata(url: string): Promise<{
+  title: string;
+  description: string;
+  image: string | null;
+}> {
+  try {
+    const html = await fetchUrlHtml(url);
+    return parseArticleMetadata(html, url);
+  } catch {
+    return { title: url, description: "", image: null };
+  }
+}
+
+export async function processUrlWithGeminiContext(
+  url: string
+): Promise<URLContextArticleResult | null> {
+  const ai = getUrlContextAI();
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        `Analyze the article at ${url} using URL context.
+
+Return JSON only with exactly this shape:
+{
+  "title": "clean, concise title in the ORIGINAL content language",
+  "summary": "2-3 sentence summary in the ORIGINAL content language",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "category": "one of: article, recipe, product, book, research, tutorial, news, design, code, other",
+  "detectedLanguage": "ISO 639-1 code like en, hi, es, fr, ja",
+  "description": "short meta-style description in the ORIGINAL content language",
+  "content": "main article text as plain text in the ORIGINAL content language, max 12000 characters",
+  "image": "best absolute article image URL if confidently available, otherwise null"
+}
+
+Rules:
+- Use the URL content itself, not prior knowledge
+- Keep title, summary, description, and content in the ORIGINAL language
+- Tags must be short English concepts
+- If the page is inaccessible, unsafe, or too thin to analyze, return null for content`
+      ],
+      config: {
+        tools: [{ urlContext: {} }],
+        responseMimeType: "application/json",
+      },
+    });
+
+    const responseText =
+      typeof response.text === "string"
+        ? response.text
+        : response.candidates?.[0]?.content?.parts
+            ?.map((part) => ("text" in part && typeof part.text === "string" ? part.text : ""))
+            .join("") || "";
+
+    const jsonText = normalizeJsonText(responseText);
+    if (!jsonText) return null;
+
+    const parsed = JSON.parse(jsonText) as Partial<URLContextArticleResult>;
+    const content = parsed.content?.trim();
+    if (!content || content.length < 200) {
+      return null;
+    }
+
+    const retrievedUrls =
+      response.candidates?.[0]?.urlContextMetadata?.urlMetadata?.map((item) => ({
+        retrievedUrl: item.retrievedUrl || url,
+        urlRetrievalStatus: item.urlRetrievalStatus || "URL_RETRIEVAL_STATUS_UNSPECIFIED",
+      })) || [];
+
+    return {
+      title: parsed.title?.trim() || url,
+      summary: parsed.summary?.trim() || content.substring(0, 240),
+      tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+      category: parsed.category || "article",
+      detectedLanguage: parsed.detectedLanguage || "en",
+      description: parsed.description?.trim() || "",
+      content: content.substring(0, 20000),
+      image: resolveUrl(parsed.image, url),
+      retrievedUrls,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -28,37 +184,8 @@ export async function extractArticleContent(url: string): Promise<{
   image: string | null;
 }> {
   try {
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    const html = await res.text();
-
-    // Extract title
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const ogTitleMatch = html.match(
-      /<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i
-    );
-    const title = ogTitleMatch?.[1] || titleMatch?.[1] || url;
-
-    // Extract description
-    const ogDescMatch = html.match(
-      /<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i
-    );
-    const descMatch = html.match(
-      /<meta[^>]*name="description"[^>]*content="([^"]+)"/i
-    );
-    const description = ogDescMatch?.[1] || descMatch?.[1] || "";
-
-    // Extract OG image
-    const ogImageMatch = html.match(
-      /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i
-    );
-    const image = ogImageMatch?.[1] || null;
+    const html = await fetchUrlHtml(url);
+    const { title, description, image } = parseArticleMetadata(html, url);
 
     // Extract body text (strip tags)
     const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
@@ -83,7 +210,8 @@ export async function extractArticleContent(url: string): Promise<{
 export async function processWithGemini(
   text: string,
   title: string,
-  targetLanguage: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _targetLanguage: string
 ): Promise<AIProcessingResult> {
   const genAI = getGenAI();
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -113,11 +241,7 @@ Rules:
     const responseText = result.response.text().trim();
 
     // Strip markdown code blocks if present
-    const jsonText = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const jsonText = normalizeJsonText(responseText);
 
     const parsed = JSON.parse(jsonText);
     return {
@@ -168,11 +292,7 @@ export async function processImageWithGemini(
       { text: prompt },
     ] as Parameters<typeof model.generateContent>[0]);
     const responseText = result.response.text().trim();
-    const jsonText = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const jsonText = normalizeJsonText(responseText);
     const parsed = JSON.parse(jsonText);
     return {
       title: parsed.title || "Untitled Image",
@@ -224,11 +344,7 @@ export async function processAudioWithGemini(
       { text: prompt },
     ] as Parameters<typeof model.generateContent>[0]);
     const responseText = result.response.text().trim();
-    const jsonText = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const jsonText = normalizeJsonText(responseText);
     const parsed = JSON.parse(jsonText);
     return {
       title: parsed.title || "Untitled Audio",

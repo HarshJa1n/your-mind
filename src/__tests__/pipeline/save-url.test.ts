@@ -2,10 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ── Mock all external dependencies ────────────────────────────────────────
 vi.mock("@/lib/gemini", () => ({
+  extractArticleMetadata: vi.fn(),
   extractArticleContent: vi.fn(),
   processWithGemini: vi.fn(),
   processImageWithGemini: vi.fn(),
   processAudioWithGemini: vi.fn(),
+  processUrlWithGeminiContext: vi.fn(),
 }));
 
 vi.mock("@/lib/lingo", () => ({
@@ -27,13 +29,18 @@ vi.mock("uuid", () => ({
 }));
 
 import { createClient } from "@/lib/supabase/server";
-import { extractArticleContent, processWithGemini } from "@/lib/gemini";
+import {
+  extractArticleContent,
+  processUrlWithGeminiContext,
+  processWithGemini,
+} from "@/lib/gemini";
 import { translateMeta, translateTags } from "@/lib/lingo";
 import { getUserCollection } from "@/lib/chroma";
 import { saveURLPipeline } from "@/lib/pipeline";
 
 const mockedCreateClient = vi.mocked(createClient);
 const mockedExtract = vi.mocked(extractArticleContent);
+const mockedProcessUrlWithContext = vi.mocked(processUrlWithGeminiContext);
 const mockedProcessGemini = vi.mocked(processWithGemini);
 const mockedTranslateMeta = vi.mocked(translateMeta);
 const mockedTranslateTags = vi.mocked(translateTags);
@@ -70,6 +77,23 @@ describe("saveURLPipeline", () => {
       content: "Article body content here.",
       description: "Short description",
       image: "https://example.com/image.jpg",
+    });
+
+    mockedProcessUrlWithContext.mockResolvedValue({
+      title: "Test Article",
+      summary: "A test summary",
+      tags: ["tech", "ai"],
+      category: "technology",
+      detectedLanguage: "en",
+      description: "Short description",
+      content: "Article body content here.",
+      image: "https://example.com/image.jpg",
+      retrievedUrls: [
+        {
+          retrievedUrl: "https://example.com/article",
+          urlRetrievalStatus: "URL_RETRIEVAL_STATUS_SUCCESS",
+        },
+      ],
     });
 
     mockedProcessGemini.mockResolvedValue({
@@ -165,5 +189,21 @@ describe("saveURLPipeline", () => {
     expect(result.success).toBe(true);
     // Should return quickly (well under 500ms background delay)
     expect(elapsed).toBeLessThan(400);
+  });
+
+  it("falls back to local extraction when URL Context is unavailable", async () => {
+    mockedCreateClient.mockResolvedValue(makeSupabaseMock() as never);
+    mockedProcessUrlWithContext.mockResolvedValue(null);
+
+    await saveURLPipeline({
+      url: "https://example.com/fallback",
+      userId: "user-123",
+      preferredLanguage: "en",
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(mockedExtract).toHaveBeenCalledWith("https://example.com/fallback");
+    expect(mockedProcessGemini).toHaveBeenCalled();
   });
 });
