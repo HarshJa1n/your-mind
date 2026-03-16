@@ -38,11 +38,6 @@ export default async function Home({
       <main className="mx-auto max-w-7xl px-5 pb-20 pt-10 sm:px-6">
         <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14 lg:pt-8">
           <div>
-            <div className="glass-panel mb-7 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-muted-foreground">
-              <Globe className="h-4 w-4 text-accent" />
-              <span>{t("landing.badge")}</span>
-            </div>
-
             <h1 className="font-display max-w-4xl text-5xl font-bold leading-[0.98] tracking-[-0.06em] text-balance sm:text-6xl lg:text-8xl">
               {t("landing.headline1")}
               <span className="hero-text-gradient block">{t("landing.headline2")}</span>
@@ -67,12 +62,6 @@ export default async function Home({
                 {t("landing.ctaSecondary")}
               </Link>
             </div>
-
-            <div className="mt-10 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <div className="glass-panel rounded-full px-4 py-2">6 UI locales</div>
-              <div className="glass-panel rounded-full px-4 py-2">Cross-lingual search</div>
-              <div className="glass-panel rounded-full px-4 py-2">Articles, notes, images, audio</div>
-            </div>
           </div>
 
           <GlowCard className="mx-auto w-full max-w-xl">
@@ -82,7 +71,7 @@ export default async function Home({
                 <div className="mb-4 flex items-center justify-between">
                   <BrandLogo showWordmark={false} size="sm" />
                   <span className="rounded-full bg-white/10 px-3 py-1 text-xs uppercase tracking-[0.28em] text-white/70">
-                    Demo flow
+                    {t("landing.showcaseBadge")}
                   </span>
                 </div>
 
@@ -93,28 +82,26 @@ export default async function Home({
                         <Languages className="h-5 w-5 text-pink-200" />
                       </span>
                       <div>
-                        <p className="text-sm font-semibold">Saved in English</p>
-                        <p className="text-xs text-white/60">Presented in Hindi</p>
+                        <p className="text-sm font-semibold">{t("landing.feature3Title")}</p>
+                        <p className="text-xs text-white/60">{t("landing.feature3Desc")}</p>
                       </div>
                     </div>
-                    <p className="text-sm leading-6 text-white/82">
-                      “A guide to shipping multilingual products with AI workflows.”
-                    </p>
+                    <p className="text-sm leading-6 text-white/82">{t("landing.subheadline")}</p>
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                       <ScanSearch className="mb-3 h-5 w-5 text-pink-200" />
-                      <p className="text-sm font-semibold">Search your way</p>
+                      <p className="text-sm font-semibold">{t("landing.feature2Title")}</p>
                       <p className="mt-1 text-sm text-white/65">
-                        Query in the language you think in, not the one the page was written in.
+                        {t("landing.feature2Desc")}
                       </p>
                     </div>
                     <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
                       <Sparkles className="mb-3 h-5 w-5 text-pink-200" />
-                      <p className="text-sm font-semibold">AI-native capture</p>
+                      <p className="text-sm font-semibold">{t("landing.feature1Title")}</p>
                       <p className="mt-1 text-sm text-white/65">
-                        One pipeline for save, summarize, tag, translate, and recall.
+                        {t("landing.feature1Desc")}
                       </p>
                     </div>
                   </div>
@@ -128,10 +115,10 @@ export default async function Home({
           <div className="mb-10 flex items-end justify-between gap-4">
             <div>
               <p className="mb-3 text-sm font-semibold uppercase tracking-[0.32em] text-muted-foreground">
-                Product feel
+                {t("landing.sectionEyebrow")}
               </p>
               <h2 className="font-display text-3xl font-bold tracking-[-0.05em] sm:text-5xl">
-                Built to feel like memory, not filing.
+                {t("landing.sectionTitle")}
               </h2>
             </div>
           </div>

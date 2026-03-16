@@ -95,7 +95,7 @@ export function SignupForm({ lang, messages }: { lang: string; messages: Message
             <div>
               <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.26em] text-accent">
                 <Sparkles className="h-3.5 w-3.5" />
-                Personalization
+                {t("auth.personalization")}
               </div>
 
               <div className="grid grid-cols-2 gap-3 mb-8">
@@ -165,11 +165,25 @@ export function SignupForm({ lang, messages }: { lang: string; messages: Message
             <div className="rounded-[calc(1.5rem-1px)] bg-[linear-gradient(180deg,#170710,#3f0b2b_55%,#74004c)] p-8 text-white">
               <BrandLogo showWordmark={false} size="lg" />
               <h1 className="font-display mt-8 text-5xl font-bold leading-[1] tracking-[-0.06em]">
-                {t("auth.createAccount")}
+                {t("auth.signUpPanelTitle")}
               </h1>
               <p className="mt-4 max-w-md text-base leading-7 text-white/72">
-                Build a second brain that understands what you save and hands it back in your own language.
+                {t("auth.signUpPanelBody")}
               </p>
+              <div className="mt-10 space-y-4">
+                <div className="rounded-3xl border border-white/10 bg-white/8 p-5">
+                  <p className="mb-2 text-sm font-semibold">{t("auth.signUpPanelPoint1Title")}</p>
+                  <p className="text-sm text-white/68">
+                    {t("auth.signUpPanelPoint1Desc")}
+                  </p>
+                </div>
+                <div className="rounded-3xl border border-white/10 bg-white/8 p-5">
+                  <p className="mb-2 text-sm font-semibold">{t("auth.signUpPanelPoint2Title")}</p>
+                  <p className="text-sm text-white/68">
+                    {t("auth.signUpPanelPoint2Desc")}
+                  </p>
+                </div>
+              </div>
             </div>
           </GlowCard>
         </div>
@@ -184,7 +198,7 @@ export function SignupForm({ lang, messages }: { lang: string; messages: Message
             <div className="mb-8">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.26em] text-accent">
                 <Sparkles className="h-3.5 w-3.5" />
-                Get started
+                {t("auth.signUpEyebrow")}
               </div>
               <h1 className="font-display text-4xl font-bold tracking-[-0.05em]">
                 {t("auth.createAccount")}
@@ -221,7 +235,7 @@ export function SignupForm({ lang, messages }: { lang: string; messages: Message
                   minLength={6}
                   autoComplete="new-password"
                   className="glass-panel min-h-12 w-full rounded-2xl px-4 py-3 text-card-foreground"
-                  placeholder={t("auth.passwordMin")}
+                  placeholder={t("auth.passwordPlaceholder")}
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}

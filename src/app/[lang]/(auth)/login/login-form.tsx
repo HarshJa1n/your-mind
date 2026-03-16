@@ -52,22 +52,22 @@ export function LoginForm({ lang, messages }: { lang: string; messages: Messages
             <div className="rounded-[calc(1.5rem-1px)] bg-[linear-gradient(180deg,#170710,#3f0b2b_55%,#74004c)] p-8 text-white">
               <BrandLogo showWordmark={false} size="lg" />
               <h1 className="font-display mt-8 text-5xl font-bold leading-[1] tracking-[-0.06em]">
-                {t("auth.welcomeBack")}
+                {t("auth.signInPanelTitle")}
               </h1>
               <p className="mt-4 max-w-md text-base leading-7 text-white/72">
-                Your saved knowledge, translated into the language your mind naturally uses.
+                {t("auth.signInPanelBody")}
               </p>
               <div className="mt-10 space-y-4">
                 <div className="rounded-3xl border border-white/10 bg-white/8 p-5">
-                  <p className="mb-2 text-sm font-semibold">Cross-lingual recall</p>
+                  <p className="mb-2 text-sm font-semibold">{t("auth.signInPanelPoint1Title")}</p>
                   <p className="text-sm text-white/68">
-                    Save in English, search in Hindi, revisit in the language that feels native.
+                    {t("auth.signInPanelPoint1Desc")}
                   </p>
                 </div>
                 <div className="rounded-3xl border border-white/10 bg-white/8 p-5">
-                  <p className="mb-2 text-sm font-semibold">One capture flow</p>
+                  <p className="mb-2 text-sm font-semibold">{t("auth.signInPanelPoint2Title")}</p>
                   <p className="text-sm text-white/68">
-                    Articles, notes, images, and audio all land in one calm, searchable space.
+                    {t("auth.signInPanelPoint2Desc")}
                   </p>
                 </div>
               </div>
@@ -85,7 +85,7 @@ export function LoginForm({ lang, messages }: { lang: string; messages: Messages
             <div className="mb-8">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.26em] text-accent">
                 <Sparkles className="h-3.5 w-3.5" />
-                Sign in
+                {t("auth.signInEyebrow")}
               </div>
               <h1 className="font-display text-4xl font-bold tracking-[-0.05em]">
                 {t("auth.welcomeBack")}
