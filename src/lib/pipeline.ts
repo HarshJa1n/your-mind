@@ -15,7 +15,7 @@
  *   4. Return with similarity scores
  */
 
-import { getUserCollection } from "./chroma";
+import { getEmbedder, getUserCollection } from "./chroma";
 import {
   extractArticleMetadata,
   extractArticleContent,
@@ -437,11 +437,36 @@ async function processImageBackground({
     let chromaId: string | null = null;
     try {
       const collection = await getUserCollection(userId);
-      await collection.add({
-        ids: [itemId],
-        documents: [textToEmbed],
-        metadatas: [{ supabaseId: itemId, userId, contentType: "image" }],
-      });
+      try {
+        const embedding = await getEmbedder().generateMedia(buffer, mimeType);
+        await collection.add({
+          ids: [itemId],
+          embeddings: [embedding],
+          documents: [textToEmbed],
+          metadatas: [
+            {
+              supabaseId: itemId,
+              userId,
+              contentType: "image",
+              embeddingMode: "multimodal",
+            },
+          ],
+        });
+      } catch {
+        // Fallback to text embedding if native media embedding fails.
+        await collection.add({
+          ids: [itemId],
+          documents: [textToEmbed],
+          metadatas: [
+            {
+              supabaseId: itemId,
+              userId,
+              contentType: "image",
+              embeddingMode: "text-fallback",
+            },
+          ],
+        });
+      }
       chromaId = itemId;
     } catch (chromaErr) {
       console.warn("Chroma embedding failed (search will use text fallback):", chromaErr);
@@ -562,11 +587,36 @@ async function processAudioBackground({
     let chromaId: string | null = null;
     try {
       const collection = await getUserCollection(userId);
-      await collection.add({
-        ids: [itemId],
-        documents: [textToEmbed],
-        metadatas: [{ supabaseId: itemId, userId, contentType: "audio" }],
-      });
+      try {
+        const embedding = await getEmbedder().generateMedia(buffer, mimeType);
+        await collection.add({
+          ids: [itemId],
+          embeddings: [embedding],
+          documents: [textToEmbed],
+          metadatas: [
+            {
+              supabaseId: itemId,
+              userId,
+              contentType: "audio",
+              embeddingMode: "multimodal",
+            },
+          ],
+        });
+      } catch {
+        // Fallback to text embedding if native media embedding fails.
+        await collection.add({
+          ids: [itemId],
+          documents: [textToEmbed],
+          metadatas: [
+            {
+              supabaseId: itemId,
+              userId,
+              contentType: "audio",
+              embeddingMode: "text-fallback",
+            },
+          ],
+        });
+      }
       chromaId = itemId;
     } catch (chromaErr) {
       console.warn("Chroma embedding failed (search will use text fallback):", chromaErr);

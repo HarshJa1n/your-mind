@@ -17,9 +17,13 @@ class GeminiEmbeddingFunction implements EmbeddingFunction {
     this.modelName = modelName;
   }
 
+  private getModel() {
+    return this.genAI.getGenerativeModel({ model: this.modelName });
+  }
+
   async generate(texts: string[]): Promise<number[][]> {
-    const model = this.genAI.getGenerativeModel({ model: this.modelName });
     const embeddings: number[][] = [];
+    const model = this.getModel();
 
     for (const text of texts) {
       const result = await model.embedContent(text);
@@ -27,6 +31,26 @@ class GeminiEmbeddingFunction implements EmbeddingFunction {
     }
 
     return embeddings;
+  }
+
+  async generateText(text: string): Promise<number[]> {
+    const model = this.getModel();
+    const result = await model.embedContent(text);
+    return result.embedding.values;
+  }
+
+  async generateMedia(buffer: Buffer, mimeType: string): Promise<number[]> {
+    const model = this.getModel();
+    const result = await model.embedContent([
+      {
+        inlineData: {
+          mimeType,
+          data: buffer.toString("base64"),
+        },
+      },
+    ] as Parameters<typeof model.embedContent>[0]);
+
+    return result.embedding.values;
   }
 }
 

@@ -16,6 +16,9 @@ vi.mock("@/lib/lingo", () => ({
 
 vi.mock("@/lib/chroma", () => ({
   getUserCollection: vi.fn(),
+  getEmbedder: vi.fn().mockReturnValue({
+    generateMedia: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
+  }),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
