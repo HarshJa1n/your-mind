@@ -1,8 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Search as SearchIcon, Loader2, Globe, FileText, StickyNote, Image as ImageIcon, FileAudio, File } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import {
+  Search as SearchIcon,
+  Loader2,
+  Globe,
+  FileText,
+  StickyNote,
+  Image as ImageIcon,
+  FileAudio,
+  File,
+  ArrowRight,
+} from "lucide-react";
 import { createTranslator } from "@/lib/i18n";
+import { BrandLogo } from "@/components/brand-logo";
+import { GlowCard } from "@/components/ui/glow-card";
 import type en from "../../../../../locales/en.json";
 
 type Messages = typeof en;
@@ -30,11 +43,20 @@ const CONTENT_TYPE_ICONS: Record<string, typeof FileText> = {
   audio: FileAudio,
 };
 
-export default function SearchContent({ messages }: { messages: Messages }) {
-  const [query, setQuery] = useState("");
+export default function SearchContent({
+  messages,
+  locale,
+  initialQuery = "",
+}: {
+  messages: Messages;
+  locale: string;
+  initialQuery?: string;
+}) {
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const hasAutoSearched = useRef(false);
   const t = createTranslator(messages);
 
   async function handleSearch(e: React.FormEvent) {
@@ -56,39 +78,68 @@ export default function SearchContent({ messages }: { messages: Messages }) {
     finally { setLoading(false); }
   }
 
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (!initialQuery.trim() || hasAutoSearched.current) return;
+    hasAutoSearched.current = true;
+
+    const formLikeEvent = {
+      preventDefault() {},
+    } as React.FormEvent;
+
+    handleSearch(formLikeEvent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery]);
+
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold mb-1">{t("search.title")}</h1>
-        <p className="text-muted-foreground">{t("search.subtitle")}</p>
+    <div className="mx-auto max-w-6xl">
+      <div className="mb-6 flex items-start justify-between gap-4 lg:hidden">
+        <BrandLogo href={`/${locale}/dashboard`} size="sm" />
       </div>
 
-      <form onSubmit={handleSearch} className="relative mb-8">
-        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("search.placeholder")}
-          className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-border bg-card text-card-foreground focus:outline-none focus:ring-2 focus:ring-ring text-base"
-        />
-        <button
-          type="submit"
-          disabled={loading || !query.trim()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-2 bg-accent text-accent-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer"
-        >
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("search.searchButton")}
-        </button>
-      </form>
+      <GlowCard className="mb-6">
+        <div className="p-6 sm:p-8">
+          <div className="mb-8">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-muted-foreground">
+              Discover
+            </p>
+            <h1 className="font-display text-4xl font-bold tracking-[-0.05em]">
+              {t("search.title")}
+            </h1>
+            <p className="mt-2 text-muted-foreground">{t("search.subtitle")}</p>
+          </div>
+
+          <form onSubmit={handleSearch} className="relative">
+            <SearchIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-accent" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("search.placeholder")}
+              className="glass-panel min-h-14 w-full rounded-[1.6rem] pl-14 pr-32 text-base text-card-foreground"
+            />
+            <button
+              type="submit"
+              disabled={loading || !query.trim()}
+              className="absolute right-2 top-1/2 inline-flex min-h-11 -translate-y-1/2 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-4 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(255,0,140,0.22)] disabled:opacity-50"
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t("search.searchButton")}
+            </button>
+          </form>
+        </div>
+      </GlowCard>
 
       {loading && (
-        <div className="flex items-center justify-center py-16">
+        <div className="glass-panel flex items-center justify-center rounded-[1.5rem] py-16">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       )}
 
       {!loading && searched && results.length === 0 && (
-        <div className="text-center py-16">
+        <div className="glass-panel rounded-[1.5rem] py-16 text-center">
           <p className="text-muted-foreground">{t("search.noResults", { query })}</p>
         </div>
       )}
@@ -100,39 +151,46 @@ export default function SearchContent({ messages }: { messages: Messages }) {
             const title = result.translated_title || result.original_title || t("common.untitled");
             const summary = result.translated_summary || result.original_summary;
             return (
-              <div key={result.id} className="p-5 bg-card border border-border rounded-xl hover:shadow-md transition-shadow cursor-pointer">
-                <div className="flex items-start gap-4">
-                  {result.thumbnail_url && (
-                    <div className="w-20 h-14 rounded-lg overflow-hidden bg-muted shrink-0">
-                      <img src={result.thumbnail_url} alt="" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                      <span className="text-xs text-muted-foreground capitalize">{result.content_type}</span>
-                      {result.translated_language && (
-                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                          <Globe className="h-3 w-3" />
-                          {result.translated_language.toUpperCase()}
-                        </span>
-                      )}
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        {t("search.match", { percent: String(Math.round(result.similarity * 100)) })}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-sm mb-1 line-clamp-1">{title}</h3>
-                    {summary && <p className="text-sm text-muted-foreground line-clamp-2">{summary}</p>}
-                    {result.auto_tags && result.auto_tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {result.auto_tags.slice(0, 4).map((tag) => (
-                          <span key={tag} className="px-2 py-0.5 rounded-md text-xs bg-secondary text-secondary-foreground">{tag}</span>
-                        ))}
+              <GlowCard key={result.id}>
+                <Link href={`/${locale}/items/${result.id}`} className="block p-5 sm:p-6">
+                  <div className="flex items-start gap-4">
+                    {result.thumbnail_url && (
+                      <div className="h-16 w-24 shrink-0 overflow-hidden rounded-2xl bg-muted">
+                        <img src={result.thumbnail_url} alt="" className="h-full w-full object-cover" />
                       </div>
                     )}
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold capitalize text-accent">
+                          <Icon className="h-3.5 w-3.5 shrink-0" />
+                          {result.content_type}
+                        </span>
+                        {result.translated_language && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1 text-xs text-muted-foreground">
+                            <Globe className="h-3 w-3" />
+                            {result.translated_language.toUpperCase()}
+                          </span>
+                        )}
+                        <span className="ml-auto text-xs font-medium text-muted-foreground">
+                          {t("search.match", { percent: String(Math.round(result.similarity * 100)) })}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-xl font-bold tracking-[-0.03em]">{title}</h3>
+                      {summary && <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{summary}</p>}
+                      {result.auto_tags && result.auto_tags.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {result.auto_tags.slice(0, 4).map((tag) => (
+                            <span key={tag} className="rounded-full bg-white/70 px-3 py-1 text-xs text-secondary-foreground">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
                   </div>
-                </div>
-              </div>
+                </Link>
+              </GlowCard>
             );
           })}
         </div>

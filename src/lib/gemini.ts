@@ -1,6 +1,8 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 let _genAI: GoogleGenerativeAI | null = null;
+let _urlContextAI: GoogleGenAI | null = null;
 
 function getGenAI(): GoogleGenerativeAI {
   if (!_genAI) {
@@ -9,12 +11,319 @@ function getGenAI(): GoogleGenerativeAI {
   return _genAI;
 }
 
+function getUrlContextAI(): GoogleGenAI {
+  if (!_urlContextAI) {
+    _urlContextAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+  }
+  return _urlContextAI;
+}
+
 export interface AIProcessingResult {
   summary: string;
   tags: string[];
   category: string;
   detectedLanguage: string;
   title: string;
+}
+
+export interface URLContextArticleResult extends AIProcessingResult {
+  content: string;
+  description: string;
+  image: string | null;
+  retrievedUrls: Array<{
+    retrievedUrl: string;
+    urlRetrievalStatus: string;
+  }>;
+}
+
+function normalizeJsonText(text: string): string {
+  return text
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+}
+
+function resolveUrl(value: string | null | undefined, baseUrl: string): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value, baseUrl).toString();
+  } catch {
+    return value;
+  }
+}
+
+export async function fetchUrlHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
+    },
+    signal: AbortSignal.timeout(10000),
+  });
+
+  return res.text();
+}
+
+function extractMetaContent(
+  html: string,
+  attr: "property" | "name" | "itemprop",
+  key: string
+) {
+  const regex = new RegExp(
+    `<meta[^>]*${attr}=["']${key}["'][^>]*content=["']([^"']+)["']`,
+    "i"
+  );
+  return html.match(regex)?.[1] || null;
+}
+
+function unique<T>(values: T[]) {
+  return Array.from(new Set(values));
+}
+
+function isLikelyGenericImageAsset(imageUrl: string, pageUrl: string) {
+  try {
+    const image = new URL(imageUrl);
+    const page = new URL(pageUrl);
+    const path = `${image.pathname}${image.search}`.toLowerCase();
+    const filename = path.split("/").pop() || "";
+
+    const suspiciousPatterns = [
+      /(^|[-_/])og(\.[a-z0-9]+|[-_/])/,
+      /opengraph/,
+      /social/,
+      /share/,
+      /default/,
+      /logo/,
+      /icon/,
+      /favicon/,
+      /avatar/,
+      /sprite/,
+      /apple-touch-icon/,
+      /android-chrome/,
+      /mstile/,
+      /banner/,
+    ];
+
+    if (suspiciousPatterns.some((pattern) => pattern.test(path) || pattern.test(filename))) {
+      return true;
+    }
+
+    if (image.hostname === page.hostname && /^\/(og|social)\./.test(image.pathname.toLowerCase())) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function extractInlineImageCandidates(html: string, baseUrl: string) {
+  const candidates: string[] = [];
+  const imgTagRegex = /<img\b[^>]*>/gi;
+  const srcRegex = /\bsrc=["']([^"']+)["']/i;
+  const widthRegex = /\bwidth=["']?(\d{2,4})["']?/i;
+  const heightRegex = /\bheight=["']?(\d{2,4})["']?/i;
+
+  const tags = html.match(imgTagRegex) || [];
+  for (const tag of tags) {
+    const src = tag.match(srcRegex)?.[1];
+    if (!src) continue;
+
+    const width = Number(tag.match(widthRegex)?.[1] || 0);
+    const height = Number(tag.match(heightRegex)?.[1] || 0);
+    if ((width && width < 200) || (height && height < 200)) continue;
+
+    const lowerTag = tag.toLowerCase();
+    if (
+      /logo|avatar|icon|emoji|sprite|favicon/.test(lowerTag) ||
+      /data:image\//.test(src)
+    ) {
+      continue;
+    }
+
+    const resolved = resolveUrl(src, baseUrl);
+    if (resolved) candidates.push(resolved);
+    if (candidates.length >= 8) break;
+  }
+
+  return candidates;
+}
+
+async function verifyImageUrl(imageUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(imageUrl, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
+      },
+    });
+
+    if (!response.ok) return false;
+    const contentType = response.headers.get("content-type") || "";
+    return /^image\//i.test(contentType) && !/svg/i.test(contentType);
+  } catch {
+    try {
+      const response = await fetch(imageUrl, {
+        method: "GET",
+        redirect: "follow",
+        signal: AbortSignal.timeout(5000),
+        headers: {
+          Range: "bytes=0-0",
+          "User-Agent":
+            "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
+        },
+      });
+      if (!response.ok) return false;
+      const contentType = response.headers.get("content-type") || "";
+      return /^image\//i.test(contentType) && !/svg/i.test(contentType);
+    } catch {
+      return false;
+    }
+  }
+}
+
+export async function resolveBestArticleImage(
+  pageUrl: string,
+  html: string,
+  suggestedImage: string | null
+): Promise<string | null> {
+  const metaCandidates = [
+    extractMetaContent(html, "property", "og:image"),
+    extractMetaContent(html, "name", "twitter:image"),
+    extractMetaContent(html, "itemprop", "image"),
+  ]
+    .map((value) => resolveUrl(value, pageUrl))
+    .filter((value): value is string => Boolean(value));
+
+  const inlineCandidates = extractInlineImageCandidates(html, pageUrl);
+  const candidates = unique(
+    [suggestedImage, ...metaCandidates, ...inlineCandidates].filter(
+      (value): value is string => Boolean(value)
+    )
+  );
+
+  for (const candidate of candidates) {
+    if (isLikelyGenericImageAsset(candidate, pageUrl)) continue;
+    if (await verifyImageUrl(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function parseArticleMetadata(html: string, url: string) {
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const ogTitleMatch = html.match(
+    /<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i
+  );
+  const ogDescMatch = html.match(
+    /<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i
+  );
+  const descMatch = html.match(
+    /<meta[^>]*name="description"[^>]*content="([^"]+)"/i
+  );
+  const ogImageMatch =
+    extractMetaContent(html, "property", "og:image") ||
+    extractMetaContent(html, "name", "twitter:image") ||
+    extractMetaContent(html, "itemprop", "image");
+
+  return {
+    title: (ogTitleMatch?.[1] || titleMatch?.[1] || url).trim(),
+    description: ogDescMatch?.[1] || descMatch?.[1] || "",
+    image: resolveUrl(ogImageMatch || null, url),
+  };
+}
+
+export async function extractArticleMetadata(url: string): Promise<{
+  title: string;
+  description: string;
+  image: string | null;
+}> {
+  try {
+    const html = await fetchUrlHtml(url);
+    return parseArticleMetadata(html, url);
+  } catch {
+    return { title: url, description: "", image: null };
+  }
+}
+
+export async function processUrlWithGeminiContext(
+  url: string
+): Promise<URLContextArticleResult | null> {
+  const ai = getUrlContextAI();
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: [
+        `Analyze the article at ${url} using URL context.
+
+Return JSON only with exactly this shape:
+{
+  "title": "clean, concise title in the ORIGINAL content language",
+  "summary": "2-3 sentence summary in the ORIGINAL content language",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "category": "one of: article, recipe, product, book, research, tutorial, news, design, code, other",
+  "detectedLanguage": "ISO 639-1 code like en, hi, es, fr, ja",
+  "description": "short meta-style description in the ORIGINAL content language",
+  "content": "main article text as plain text in the ORIGINAL content language, max 12000 characters",
+  "image": "best absolute article image URL if confidently available, otherwise null"
+}
+
+Rules:
+- Use the URL content itself, not prior knowledge
+- Keep title, summary, description, and content in the ORIGINAL language
+- Tags must be short English concepts
+- If the page is inaccessible, unsafe, or too thin to analyze, return null for content`
+      ],
+      config: {
+        tools: [{ urlContext: {} }],
+        responseMimeType: "application/json",
+      },
+    });
+
+    const responseText =
+      typeof response.text === "string"
+        ? response.text
+        : response.candidates?.[0]?.content?.parts
+            ?.map((part) => ("text" in part && typeof part.text === "string" ? part.text : ""))
+            .join("") || "";
+
+    const jsonText = normalizeJsonText(responseText);
+    if (!jsonText) return null;
+
+    const parsed = JSON.parse(jsonText) as Partial<URLContextArticleResult>;
+    const content = parsed.content?.trim();
+    if (!content || content.length < 200) {
+      return null;
+    }
+
+    const retrievedUrls =
+      response.candidates?.[0]?.urlContextMetadata?.urlMetadata?.map((item) => ({
+        retrievedUrl: item.retrievedUrl || url,
+        urlRetrievalStatus: item.urlRetrievalStatus || "URL_RETRIEVAL_STATUS_UNSPECIFIED",
+      })) || [];
+
+    return {
+      title: parsed.title?.trim() || url,
+      summary: parsed.summary?.trim() || content.substring(0, 240),
+      tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+      category: parsed.category || "article",
+      detectedLanguage: parsed.detectedLanguage || "en",
+      description: parsed.description?.trim() || "",
+      content: content.substring(0, 20000),
+      image: resolveUrl(parsed.image, url),
+      retrievedUrls,
+    };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -28,37 +337,8 @@ export async function extractArticleContent(url: string): Promise<{
   image: string | null;
 }> {
   try {
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
-      },
-      signal: AbortSignal.timeout(10000),
-    });
-
-    const html = await res.text();
-
-    // Extract title
-    const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-    const ogTitleMatch = html.match(
-      /<meta[^>]*property="og:title"[^>]*content="([^"]+)"/i
-    );
-    const title = ogTitleMatch?.[1] || titleMatch?.[1] || url;
-
-    // Extract description
-    const ogDescMatch = html.match(
-      /<meta[^>]*property="og:description"[^>]*content="([^"]+)"/i
-    );
-    const descMatch = html.match(
-      /<meta[^>]*name="description"[^>]*content="([^"]+)"/i
-    );
-    const description = ogDescMatch?.[1] || descMatch?.[1] || "";
-
-    // Extract OG image
-    const ogImageMatch = html.match(
-      /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i
-    );
-    const image = ogImageMatch?.[1] || null;
+    const html = await fetchUrlHtml(url);
+    const { title, description, image } = parseArticleMetadata(html, url);
 
     // Extract body text (strip tags)
     const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
@@ -83,7 +363,8 @@ export async function extractArticleContent(url: string): Promise<{
 export async function processWithGemini(
   text: string,
   title: string,
-  targetLanguage: string
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _targetLanguage: string
 ): Promise<AIProcessingResult> {
   const genAI = getGenAI();
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
@@ -113,11 +394,7 @@ Rules:
     const responseText = result.response.text().trim();
 
     // Strip markdown code blocks if present
-    const jsonText = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const jsonText = normalizeJsonText(responseText);
 
     const parsed = JSON.parse(jsonText);
     return {
@@ -168,11 +445,7 @@ export async function processImageWithGemini(
       { text: prompt },
     ] as Parameters<typeof model.generateContent>[0]);
     const responseText = result.response.text().trim();
-    const jsonText = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const jsonText = normalizeJsonText(responseText);
     const parsed = JSON.parse(jsonText);
     return {
       title: parsed.title || "Untitled Image",
@@ -224,11 +497,7 @@ export async function processAudioWithGemini(
       { text: prompt },
     ] as Parameters<typeof model.generateContent>[0]);
     const responseText = result.response.text().trim();
-    const jsonText = responseText
-      .replace(/^```json\s*/i, "")
-      .replace(/^```\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
+    const jsonText = normalizeJsonText(responseText);
     const parsed = JSON.parse(jsonText);
     return {
       title: parsed.title || "Untitled Audio",

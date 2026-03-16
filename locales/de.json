@@ -54,7 +54,10 @@
     "processingFailedMsg": "Timeout beim Verarbeiten. Versuche es erneut.",
     "viewOriginal": "Original ansehen",
     "allSpaces": "Alle",
-    "loadingMore": "Lade mehr..."
+    "loadingMore": "Lade mehr...",
+    "extensionSaving": "Wird aus der Erweiterung gespeichert...",
+    "extensionSaved": "In YourMind gespeichert",
+    "extensionError": "Speichern fehlgeschlagen. Bitte erneut versuchen."
   },
   "saveModal": {
     "title": "In YourMind speichern",

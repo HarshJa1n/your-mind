@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
-import { Check, Loader2 } from "lucide-react";
+import { Check, Globe, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { createTranslator } from "@/lib/i18n";
+import { BrandLogo } from "@/components/brand-logo";
+import { GlowCard } from "@/components/ui/glow-card";
+import { cn } from "@/lib/utils";
 import type en from "../../../../../locales/en.json";
 
 type Messages = typeof en;
@@ -25,7 +27,6 @@ export default function SettingsContent({
   messages: Messages;
   initialLanguage: string;
 }) {
-  const params = useParams<{ lang: string }>();
   const [selectedLanguage, setSelectedLanguage] = useState(initialLanguage);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -51,45 +52,76 @@ export default function SettingsContent({
   }
 
   return (
-    <div className="p-8 max-w-2xl">
-      <h1 className="text-2xl font-bold mb-1">{t("settings.title")}</h1>
-      <p className="text-muted-foreground mb-8">{t("settings.subtitle")}</p>
-
-      <div className="bg-card border border-border rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-1">{t("settings.languageTitle")}</h2>
-        <p className="text-sm text-muted-foreground mb-6">{t("settings.languageSubtitle")}</p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
-          {LANGUAGES.map((lang) => (
-            <button
-              key={lang.code}
-              onClick={() => setSelectedLanguage(lang.code)}
-              className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                selectedLanguage === lang.code
-                  ? "border-accent bg-accent/5 ring-2 ring-accent"
-                  : "border-border hover:border-muted-foreground/30"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-sm">{lang.native}</p>
-                  <p className="text-xs text-muted-foreground">{lang.name}</p>
-                </div>
-                {selectedLanguage === lang.code && <Check className="h-4 w-4 text-accent" />}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center gap-2"
-        >
-          {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-          {saved ? t("settings.saved") : t("settings.saveChanges")}
-        </button>
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-6 flex items-start justify-between gap-4 lg:hidden">
+        <BrandLogo href={`/${initialLanguage}/dashboard`} size="sm" />
       </div>
+
+      <GlowCard>
+        <div className="grid gap-6 p-6 sm:p-8 lg:grid-cols-[0.88fr_1.12fr]">
+          <div className="rounded-[1.6rem] bg-[linear-gradient(180deg,#16060f,#3f0b2b_56%,#75004d)] p-6 text-white">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-white/75">
+              <Sparkles className="h-3.5 w-3.5" />
+              Profile
+            </div>
+            <h1 className="font-display mt-6 text-4xl font-bold tracking-[-0.05em]">
+              {t("settings.title")}
+            </h1>
+            <p className="mt-3 text-sm leading-7 text-white/68">
+              {t("settings.subtitle")}
+            </p>
+          </div>
+
+          <div>
+            <div className="mb-6 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Globe className="h-4 w-4 text-accent" />
+              {t("settings.languageTitle")}
+            </div>
+            <p className="mb-6 text-sm text-muted-foreground">{t("settings.languageSubtitle")}</p>
+
+            <div className="mb-6 grid grid-cols-2 gap-3">
+              {LANGUAGES.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setSelectedLanguage(lang.code)}
+                  className={cn(
+                    "glass-panel rounded-[1.35rem] p-4 text-left",
+                    selectedLanguage === lang.code
+                      ? "border-accent/40 bg-[#ffd7ea] text-[#6a0042] shadow-[0_16px_36px_rgba(255,0,140,0.16)]"
+                      : "hover:bg-white/80"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-sm">{lang.native}</p>
+                      <p
+                        className={cn(
+                          "text-xs",
+                          selectedLanguage === lang.code
+                            ? "text-[#8d4a6e]"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        {lang.name}
+                      </p>
+                    </div>
+                    {selectedLanguage === lang.code && <Check className="h-4 w-4" />}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
+            >
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+              {saved ? t("settings.saved") : t("settings.saveChanges")}
+            </button>
+          </div>
+        </div>
+      </GlowCard>
     </div>
   );
 }

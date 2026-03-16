@@ -6,26 +6,34 @@ import {
   useCallback,
   useRef,
   useMemo,
+  FormEvent,
+  startTransition,
 } from "react";
 import {
-  FileText,
   Image as ImageIcon,
   StickyNote,
   FileAudio,
   File,
-  Globe,
   Plus,
   X,
   Loader2,
   Link as LinkIcon,
-  Sparkles,
-  ExternalLink,
+  Search as SearchIcon,
   Music,
   AlertCircle,
   CheckCircle2,
+  Play,
+  Pencil,
+  Quote,
+  Copy,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createTranslator } from "@/lib/i18n";
+import { BrandLogo } from "@/components/brand-logo";
+import { GlowCard } from "@/components/ui/glow-card";
+import { cn } from "@/lib/utils";
 import type en from "../../locales/en.json";
 
 type Messages = typeof en;
@@ -33,10 +41,13 @@ type Messages = typeof en;
 interface Item {
   id: string;
   content_type: string;
+  card_type?: string | null;
+  card_metadata?: Record<string, unknown> | null;
   original_title: string | null;
   translated_title: string | null;
   original_summary: string | null;
   translated_summary: string | null;
+  original_content?: string | null;
   original_language: string | null;
   translated_language: string | null;
   auto_tags: string[];
@@ -46,22 +57,6 @@ interface Item {
   chroma_id: string | null;
   created_at: string;
 }
-
-const CONTENT_TYPE_ICONS: Record<string, typeof FileText> = {
-  article: FileText,
-  note: StickyNote,
-  image: ImageIcon,
-  pdf: File,
-  audio: FileAudio,
-};
-
-const CONTENT_TYPE_COLORS: Record<string, string> = {
-  article: "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300",
-  note: "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300",
-  image: "bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300",
-  pdf: "bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300",
-  audio: "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300",
-};
 
 const PROCESSING_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes → mark as failed
 
@@ -75,6 +70,146 @@ function isFailed(item: Item): boolean {
   if (item.chroma_id || item.original_summary) return false;
   const age = Date.now() - new Date(item.created_at).getTime();
   return age >= PROCESSING_TIMEOUT_MS;
+}
+
+function getRelativeDate(dateString: string): string {
+  const diffMs = new Date(dateString).getTime() - Date.now();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+  if (Math.abs(diffDays) >= 1) return rtf.format(diffDays, "day");
+  const diffHours = Math.round(diffMs / (1000 * 60 * 60));
+  if (Math.abs(diffHours) >= 1) return rtf.format(diffHours, "hour");
+  const diffMinutes = Math.round(diffMs / (1000 * 60));
+  return rtf.format(diffMinutes, "minute");
+}
+
+function getSourceDomain(item: Item) {
+  const metadataDomain = typeof item.card_metadata?.domain === "string" ? item.card_metadata.domain : null;
+  if (metadataDomain) return metadataDomain;
+  if (!item.source_url) return null;
+  try {
+    return new URL(item.source_url).hostname.replace("www.", "");
+  } catch {
+    return null;
+  }
+}
+
+function getFavicon(item: Item) {
+  const metadataFavicon =
+    typeof item.card_metadata?.faviconUrl === "string" ? item.card_metadata.faviconUrl : null;
+  if (metadataFavicon) return metadataFavicon;
+  const domain = getSourceDomain(item);
+  return domain
+    ? `https://www.google.com/s2/favicons?domain=${domain}&sz=32`
+    : null;
+}
+
+function getStringMeta(item: Item, key: string) {
+  const value = item.card_metadata?.[key];
+  return typeof value === "string" ? value : null;
+}
+
+function getNumberMeta(item: Item, key: string) {
+  const value = item.card_metadata?.[key];
+  return typeof value === "number" ? value : null;
+}
+
+function getStringArrayMeta(item: Item, key: string) {
+  const value = item.card_metadata?.[key];
+  return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
+}
+
+function CardHoverDetails({
+  item,
+}: {
+  item: Item;
+}) {
+  const sourceDomain = getSourceDomain(item);
+  const favicon = getFavicon(item);
+  const translationPill =
+    item.original_language && item.translated_language && item.original_language !== item.translated_language
+      ? `${item.original_language.toUpperCase()} → ${item.translated_language.toUpperCase()}`
+      : null;
+
+  return (
+    <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col rounded-[1rem] bg-[rgba(8,8,11,0.84)] p-3 text-white opacity-0 shadow-[0_20px_40px_rgba(8,8,11,0.22)] backdrop-blur-md transition-opacity duration-200 ease-out group-hover:opacity-100">
+      <div className="flex items-center justify-end gap-2">
+        {item.source_url ? (
+          <a
+            href={item.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="pointer-events-auto rounded-full bg-white/14 p-2 text-white/90 hover:bg-white/22"
+            onClick={(e) => e.stopPropagation()}
+            aria-label="Open original"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        ) : null}
+        {item.source_url ? (
+          <button
+            type="button"
+            className="pointer-events-auto rounded-full bg-white/14 p-2 text-white/90 hover:bg-white/22"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              startTransition(() => {
+                navigator.clipboard.writeText(item.source_url || "");
+              });
+            }}
+            aria-label="Copy link"
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+      </div>
+      <div className="mt-3 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          {item.auto_tags.slice(0, 3).map((tag) => (
+            <span key={tag} className="rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white/88">
+              {tag}
+            </span>
+          ))}
+          {translationPill ? (
+            <span className="rounded-full bg-white/12 px-2.5 py-1 text-[11px] font-medium text-white/88">
+              {translationPill}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.18em] text-white/64">
+          <span className="flex items-center gap-2">
+            {favicon ? <img src={favicon} alt="" className="h-3.5 w-3.5 rounded-full" /> : null}
+            {sourceDomain || "YourMind"}
+          </span>
+          <span>{getRelativeDate(item.created_at)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DefaultTextMeta({
+  title,
+  summary,
+  className,
+}: {
+  title: string;
+  summary?: string | null;
+  className?: string;
+}) {
+  return (
+    <div className={cn("space-y-2 px-4 pb-4 pt-3", className)}>
+      <h3 className="line-clamp-2 font-display text-[1.1rem] font-semibold leading-tight tracking-[-0.04em] text-foreground">
+        {title}
+      </h3>
+      {summary ? (
+        <p className="line-clamp-3 text-sm leading-6 text-muted-foreground">
+          {summary}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 // ─── File Drop Zone ────────────────────────────────────────────────────────
@@ -110,9 +245,11 @@ function FileDropZone({
         if (f) onFileSelect(f);
       }}
       onClick={() => inputRef.current?.click()}
-      className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors
-        ${dragOver ? "border-accent bg-accent/5" : "border-border hover:border-accent/50"}
-        ${file ? "border-green-500/50 bg-green-50/10 dark:bg-green-950/10" : ""}`}
+      className={cn(
+        "glass-panel rounded-[1.35rem] border-2 border-dashed p-6 text-center",
+        dragOver ? "border-accent bg-accent/5" : "hover:border-accent/50",
+        file ? "border-green-500/50 bg-green-50/10" : ""
+      )}
     >
       <input
         ref={inputRef}
@@ -232,18 +369,26 @@ function SaveModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(21,6,14,0.55)] backdrop-blur-md p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-lg bg-card border border-border rounded-2xl shadow-2xl">
+      <GlowCard className="w-full max-w-xl" interactive={false}>
+        <div className="w-full p-1">
         {/* Header */}
         <div className="flex items-center justify-between p-6 pb-4">
-          <h2 className="text-lg font-semibold">{t("saveModal.title")}</h2>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              Capture
+            </p>
+            <h2 className="font-display text-2xl font-bold tracking-[-0.04em]">
+              {t("saveModal.title")}
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="p-2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer rounded-lg hover:bg-secondary"
+            className="glass-panel flex h-10 w-10 items-center justify-center rounded-2xl text-muted-foreground hover:text-foreground"
             aria-label={t("common.close")}
           >
             <X className="h-4 w-4" />
@@ -251,14 +396,14 @@ function SaveModal({
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mx-6 p-1 bg-secondary rounded-xl mb-0">
+        <div className="mx-6 mb-0 flex gap-1 rounded-[1.2rem] bg-secondary/70 p-1.5">
           {TABS.map(({ key, icon: Icon, label }) => (
             <button
               key={key}
               onClick={() => setMode(key)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2.5 text-xs font-medium transition-all ${
                 mode === key
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-white text-foreground shadow-[0_10px_24px_rgba(31,7,26,0.08)]"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -285,14 +430,14 @@ function SaveModal({
                   required
                   autoFocus
                   placeholder={t("saveModal.urlPlaceholder")}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="glass-panel w-full rounded-2xl px-4 py-3 focus:outline-none"
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -320,7 +465,7 @@ function SaveModal({
                   required
                   autoFocus
                   placeholder={t("saveModal.noteTitlePlaceholder")}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="glass-panel w-full rounded-2xl px-4 py-3 focus:outline-none"
                 />
               </div>
               <div>
@@ -334,14 +479,14 @@ function SaveModal({
                   required
                   rows={5}
                   placeholder={t("saveModal.noteContentPlaceholder")}
-                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  className="glass-panel w-full rounded-2xl px-4 py-3 focus:outline-none resize-none"
                 />
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -369,7 +514,7 @@ function SaveModal({
               <button
                 onClick={() => handleSaveFile("image")}
                 disabled={loading || !imageFile}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -397,7 +542,7 @@ function SaveModal({
               <button
                 onClick={() => handleSaveFile("audio")}
                 disabled={loading || !audioFile}
-                className="w-full py-2.5 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] disabled:opacity-50"
               >
                 {loading ? (
                   <>
@@ -410,7 +555,8 @@ function SaveModal({
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </GlowCard>
     </div>
   );
 }
@@ -425,28 +571,33 @@ function ItemCard({
   locale: string;
   t: ReturnType<typeof createTranslator>;
 }) {
-  const Icon = CONTENT_TYPE_ICONS[item.content_type] || FileText;
-  const colorClass =
-    CONTENT_TYPE_COLORS[item.content_type] || CONTENT_TYPE_COLORS.article;
   const processing = isProcessing(item);
   const failed = isFailed(item);
+  const cardType = item.card_type || item.content_type;
   const title =
     item.translated_title || item.original_title || t("common.untitled");
   const summary = item.translated_summary || item.original_summary;
-
-  const sourceHostname = (() => {
-    if (!item.source_url) return null;
-    try {
-      return new URL(item.source_url).hostname.replace("www.", "");
-    } catch {
-      return null;
-    }
-  })();
+  const sourceHostname = getSourceDomain(item);
+  const imageUrl = item.thumbnail_url || getStringMeta(item, "imageUrl");
+  const price = getStringMeta(item, "price");
+  const duration = getStringMeta(item, "duration");
+  const servings = getStringMeta(item, "servings");
+  const cookTime = getStringMeta(item, "cookTime");
+  const author = getStringMeta(item, "author");
+  const channel = getStringMeta(item, "channel");
+  const quoteAttribution = getStringMeta(item, "quoteAttribution");
+  const notePreview = getStringMeta(item, "notePreview") || item.original_content || summary;
+  const colors = getStringArrayMeta(item, "colors");
+  const rating = getNumberMeta(item, "rating");
 
   // Failed items: non-clickable error card
   if (failed) {
     return (
-      <div className="block break-inside-avoid bg-card border border-destructive/30 rounded-xl p-5">
+      <GlowCard
+        className="mb-4 block break-inside-avoid"
+        innerClassName="p-5 border-destructive/20"
+        interactive={false}
+      >
         <div className="flex items-center gap-2 mb-2">
           <AlertCircle className="h-4 w-4 text-destructive/70 shrink-0" />
           <span className="text-xs font-medium text-destructive/80">{t("dashboard.processingFailed")}</span>
@@ -457,146 +608,224 @@ function ItemCard({
         <p className="text-xs text-muted-foreground/50 mt-1">
           {t("dashboard.processingFailedMsg")}
         </p>
-      </div>
+      </GlowCard>
     );
   }
 
   return (
-    <Link
-      href={`/${locale}/items/${item.id}`}
-      className={`block break-inside-avoid bg-card border rounded-xl p-5 transition-all cursor-pointer group
-        ${
-          processing
-            ? "border-accent/30 animate-pulse-soft pointer-events-none"
-            : "border-border hover:shadow-md hover:border-border/80"
-        }`}
+    <GlowCard
+      className="mb-4 block break-inside-avoid"
+      innerClassName={cn(
+        "group border-border/70 p-0 transition-all hover:-translate-y-0.5 hover:border-accent/25 hover:shadow-[0_16px_32px_rgba(255,0,140,0.08)]",
+        processing && "animate-pulse-soft",
+        processing && "pointer-events-none"
+      )}
+      interactive={false}
     >
-      {/* Image thumbnail */}
-      {item.content_type === "image" && item.thumbnail_url && !processing && (
-        <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
-          <img
-            src={item.thumbnail_url}
-            alt=""
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
-      )}
-
-      {/* Article thumbnail */}
-      {item.content_type !== "image" && item.thumbnail_url && !processing && (
-        <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-4 bg-muted">
-          <img
-            src={item.thumbnail_url}
-            alt=""
-            className="w-full h-full object-cover"
-            loading="lazy"
-          />
-        </div>
-      )}
-
-      {/* Audio placeholder */}
-      {item.content_type === "audio" && !processing && (
-        <div className="w-full h-14 rounded-lg mb-4 bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center gap-2">
-          <Music className="h-5 w-5 text-purple-500" />
-          <div className="flex items-end gap-0.5 h-6">
-            {[3, 5, 4, 6, 3, 5, 4].map((h, i) => (
-              <div
-                key={i}
-                className="w-1 rounded-full bg-purple-400 dark:bg-purple-500"
-                style={{ height: `${h * 3}px` }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Processing state */}
-      {processing && (
-        <div className="w-full aspect-video rounded-lg mb-4 bg-muted/60 flex items-center justify-center">
-          <Sparkles
-            className="h-6 w-6 text-accent/50 animate-spin"
-            style={{ animationDuration: "3s" }}
-          />
-        </div>
-      )}
-
-      <div className="flex items-center gap-2 mb-3">
-        <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${colorClass}`}
-        >
-          <Icon className="h-3 w-3" />
-          {t(`contentTypes.${item.content_type}`)}
-        </span>
-        {!processing &&
-          item.original_language &&
-          item.original_language !== item.translated_language && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground bg-muted">
-              <Globe className="h-3 w-3" />
-              {item.original_language.toUpperCase()} →{" "}
-              {item.translated_language?.toUpperCase()}
-            </span>
-          )}
-        {processing && (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs text-accent bg-accent/10 font-medium">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            {t("dashboard.processing")}
-          </span>
-        )}
-      </div>
-
-      <h3 className="font-semibold text-sm leading-snug mb-2 line-clamp-2 group-hover:text-accent transition-colors">
+      <Link href={`/${locale}/items/${item.id}`} className="relative block overflow-hidden rounded-[1.2rem]">
         {processing ? (
-          <span className="inline-block w-3/4 h-4 bg-muted rounded animate-pulse" />
+          <div className="flex aspect-video w-full items-center justify-center rounded-[1.2rem] bg-muted/60 p-5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-3 py-1.5 text-xs font-medium text-accent">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {t("dashboard.processing")}
+            </div>
+          </div>
+        ) : cardType === "image" && imageUrl ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-card">
+            <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+              <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <CardHoverDetails item={item} />
+            </div>
+            <DefaultTextMeta title={title} summary={summary} />
+          </div>
+        ) : cardType === "product" && imageUrl ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-white">
+            <div className="relative aspect-[4/5] bg-white">
+              <img src={imageUrl} alt="" className="h-full w-full object-contain p-4" loading="lazy" />
+              <CardHoverDetails item={item} />
+            </div>
+            {price ? (
+              <span className="absolute bottom-3 left-3 rounded-full bg-white/92 px-3 py-1 text-xs font-semibold text-foreground shadow-sm">
+                {price}
+              </span>
+            ) : null}
+            {getFavicon(item) ? (
+              <img src={getFavicon(item)!} alt="" className="absolute bottom-3 right-3 h-5 w-5 rounded-full bg-white" />
+            ) : null}
+            <DefaultTextMeta title={title} summary={summary} />
+          </div>
+        ) : cardType === "book" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-card shadow-[10px_0_20px_rgba(0,0,0,0.12)]">
+            <div className="relative aspect-[2/3] overflow-hidden bg-[linear-gradient(180deg,#22101a,#5f0e3d_60%,#ff008c)] text-white">
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="flex h-full flex-col justify-end p-5">
+                  <h3 className="font-display text-2xl font-bold leading-tight">{title}</h3>
+                  {author ? <p className="mt-2 text-sm text-white/72">{author}</p> : null}
+                </div>
+              )}
+              <CardHoverDetails item={item} />
+            </div>
+            <DefaultTextMeta
+              title={title}
+              summary={author || summary}
+              className="pt-4"
+            />
+            {rating ? <p className="px-4 pb-4 text-xs text-muted-foreground">★ {rating.toFixed(1)}</p> : null}
+          </div>
+        ) : cardType === "quote" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] border border-indigo-200/60 bg-[rgba(80,70,140,0.05)] p-5">
+            <Quote className="mb-3 h-10 w-10 text-indigo-400" />
+            <h3 className="mb-3 font-display text-lg font-semibold leading-tight tracking-[-0.04em] text-foreground">
+              {title}
+            </h3>
+            <p className="text-lg leading-8 text-foreground/92">{item.original_content || summary || title}</p>
+            {quoteAttribution ? <p className="mt-3 text-sm text-muted-foreground">— {quoteAttribution}</p> : null}
+            <CardHoverDetails item={item} />
+          </div>
+        ) : cardType === "note" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] border-l-[3px] border-l-amber-400 bg-[rgba(251,191,36,0.07)] p-5">
+            <Pencil className="absolute right-4 top-4 h-4 w-4 text-amber-600/70" />
+            <h3 className="mb-3 pr-6 font-display text-[1.1rem] font-semibold leading-tight tracking-[-0.04em] text-foreground">
+              {title}
+            </h3>
+            <p className="line-clamp-[7] pr-6 text-[14px] leading-7 text-foreground/90">
+              {notePreview || title}
+            </p>
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(255,248,237,0.96))]" />
+            <CardHoverDetails item={item} />
+          </div>
+        ) : cardType === "tweet" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-[#121218] p-5 text-white">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-full bg-white/12" />
+                <div>
+                  <p className="text-sm font-semibold">{author || sourceHostname || "Post"}</p>
+                  <p className="text-xs text-white/55">@saved</p>
+                </div>
+              </div>
+              <span className="text-xs text-white/45">X</span>
+            </div>
+            <h3 className="mb-2 font-display text-[1.05rem] font-semibold leading-tight tracking-[-0.03em] text-white">
+              {title}
+            </h3>
+            <p className="line-clamp-5 text-sm leading-7 text-white/88">{summary || title}</p>
+            <div className="mt-4 text-xs text-white/45">{getRelativeDate(item.created_at)}</div>
+            <CardHoverDetails item={item} />
+          </div>
+        ) : cardType === "video" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-muted">
+            <div className="relative aspect-video">
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)]" />
+              )}
+              <span className="absolute inset-0 flex items-center justify-center">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-black/45 text-white">
+                  <Play className="ml-0.5 h-5 w-5" />
+                </span>
+              </span>
+              {duration ? (
+                <span className="absolute bottom-3 right-3 rounded-md bg-black/72 px-2 py-1 text-[11px] font-semibold text-white">
+                  {duration}
+                </span>
+              ) : null}
+              <CardHoverDetails item={item} />
+            </div>
+            <DefaultTextMeta title={title} summary={summary || channel || sourceHostname || "Video"} />
+          </div>
+        ) : cardType === "recipe" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-muted">
+            <div className="relative aspect-[4/5]">
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+              ) : (
+                <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,#f8d9c5,#fff6ee)]" />
+              )}
+              <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                {cookTime ? <span className="rounded-full bg-black/65 px-2.5 py-1 text-[11px] font-medium text-white">⏱ {cookTime}</span> : null}
+                {servings ? <span className="rounded-full bg-black/65 px-2.5 py-1 text-[11px] font-medium text-white">👤 {servings}</span> : null}
+              </div>
+              <CardHoverDetails item={item} />
+            </div>
+            <DefaultTextMeta title={title} summary={summary} />
+          </div>
+        ) : cardType === "pdf" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-white">
+            <div className="relative aspect-[4/5] bg-[linear-gradient(180deg,#fff,#f5f1f4)] p-5">
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="h-full w-full object-cover object-top" loading="lazy" />
+              ) : (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  <File className="h-14 w-14" />
+                </div>
+              )}
+              <CardHoverDetails item={item} />
+            </div>
+            <DefaultTextMeta title={title} summary={summary} className="border-t border-border/70 pt-4" />
+            {getNumberMeta(item, "pageCount") ? (
+              <p className="px-4 pb-4 text-xs text-muted-foreground">📄 {getNumberMeta(item, "pageCount")} pages</p>
+            ) : null}
+          </div>
+        ) : cardType === "audio" ? (
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-[linear-gradient(135deg,rgba(255,0,140,0.06),rgba(255,255,255,0.84))] p-5">
+            <div className="mb-4 flex items-start justify-between">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/80">
+                <Music className="h-5 w-5 text-accent" />
+              </div>
+              {duration ? (
+                <span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-semibold text-foreground">
+                  {duration}
+                </span>
+              ) : null}
+            </div>
+            <div className="mb-4 flex h-12 items-end gap-1">
+              {[3, 5, 4, 6, 3, 5, 4, 6, 3, 4, 5, 3].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-2 rounded-full bg-[linear-gradient(180deg,#5d1a3f,#ff008c)] opacity-80"
+                  style={{ height: `${h * 8}px` }}
+                />
+              ))}
+            </div>
+            <DefaultTextMeta title={title} summary={summary || channel || sourceHostname || title} className="px-0 pb-0 pt-0" />
+            <CardHoverDetails item={item} />
+          </div>
+        ) : cardType === "color" && colors.length > 0 ? (
+          <div className="relative overflow-hidden rounded-[1.2rem]">
+            <div className="relative flex min-h-[220px]">
+              {colors.map((color) => (
+                <div key={color} className="flex-1" style={{ backgroundColor: color }} />
+              ))}
+              <CardHoverDetails item={item} />
+            </div>
+            <div className="bg-card">
+              <DefaultTextMeta title={title} summary={summary} />
+            </div>
+          </div>
         ) : (
-          title
+          <div className="relative overflow-hidden rounded-[1.2rem] bg-card">
+            {imageUrl ? (
+              <div className="relative aspect-[5/4] overflow-hidden bg-muted">
+                <img src={imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+                <CardHoverDetails item={item} />
+              </div>
+            ) : (
+              <div className="flex min-h-[180px] items-center justify-center bg-[linear-gradient(135deg,rgba(255,0,140,0.05),rgba(255,255,255,0.8))] px-6 text-center">
+                <p className="font-display text-2xl font-semibold tracking-[-0.04em] text-foreground/78">
+                  {sourceHostname || title}
+                </p>
+              </div>
+            )}
+            {!imageUrl ? <CardHoverDetails item={item} /> : null}
+            <DefaultTextMeta title={title} summary={summary} />
+          </div>
         )}
-      </h3>
-
-      {processing ? (
-        <div className="space-y-1.5 mb-3">
-          <span className="block h-3 bg-muted rounded animate-pulse w-full" />
-          <span className="block h-3 bg-muted rounded animate-pulse w-5/6" />
-          <span className="block h-3 bg-muted rounded animate-pulse w-4/6" />
-        </div>
-      ) : summary ? (
-        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-3">
-          {summary}
-        </p>
-      ) : null}
-
-      {!processing && item.auto_tags && item.auto_tags.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {item.auto_tags.slice(0, 3).map((tag) => (
-            <span
-              key={tag}
-              className="px-2 py-0.5 rounded-md text-xs bg-secondary text-secondary-foreground"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {sourceHostname && (
-        <div className="mt-auto pt-3 border-t border-border flex items-center justify-between">
-          <p className="text-xs text-muted-foreground truncate">{sourceHostname}</p>
-          {item.source_url && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(item.source_url!, "_blank", "noopener,noreferrer");
-              }}
-              className="text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-      )}
-    </Link>
+      </Link>
+    </GlowCard>
   );
 }
 
@@ -609,21 +838,23 @@ function EmptyState({
   t: ReturnType<typeof createTranslator>;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-24 text-center">
-      <div className="w-20 h-20 rounded-2xl bg-secondary flex items-center justify-center mb-6">
+    <GlowCard className="mx-auto max-w-2xl" interactive={false}>
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[1.8rem] bg-[linear-gradient(135deg,#1b0913,#ff008c)] text-white shadow-[0_20px_44px_rgba(255,0,140,0.24)]">
         <Plus className="h-9 w-9 text-muted-foreground" />
       </div>
-      <h2 className="text-xl font-semibold mb-2">{t("dashboard.emptyTitle")}</h2>
+      <h2 className="font-display mb-2 text-3xl font-bold tracking-[-0.04em]">{t("dashboard.emptyTitle")}</h2>
       <p className="text-muted-foreground max-w-sm mb-8 leading-relaxed">
         {t("dashboard.emptySubtitle")}
       </p>
       <button
         onClick={onAdd}
-        className="px-6 py-3 bg-accent text-accent-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity cursor-pointer"
+        className="inline-flex min-h-12 items-center justify-center rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-6 py-3 font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)]"
       >
         {t("dashboard.saveFirstItem")}
       </button>
-    </div>
+      </div>
+    </GlowCard>
   );
 }
 
@@ -641,12 +872,14 @@ export function DashboardContent({
   messages: Messages;
   autoSaveUrl?: string | null;
 }) {
+  const router = useRouter();
   const [allItems, setAllItems] = useState<Item[]>(initialItems);
   const [hasMore, setHasMore] = useState(initialItems.length >= 20);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [autoSaveStatus, setAutoSaveStatus] = useState<AutoSaveStatus>("idle");
+  const [searchQuery, setSearchQuery] = useState("");
   const sentinelRef = useRef<HTMLDivElement>(null);
   const t = createTranslator(messages);
 
@@ -752,36 +985,68 @@ export function DashboardContent({
       ? allItems
       : allItems.filter((i) => i.content_category === activeCategory);
 
+  function handleDashboardSearch(e: FormEvent) {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (!query) {
+      router.push(`/${preferredLanguage}/search`);
+      return;
+    }
+    router.push(`/${preferredLanguage}/search?q=${encodeURIComponent(query)}`);
+  }
+
   return (
-    <div className="p-8">
+    <div className="mx-auto max-w-7xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">{t("dashboard.title")}</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <div className="mb-3 lg:hidden">
+            <BrandLogo href={`/${preferredLanguage}/dashboard`} size="sm" />
+          </div>
+          <h1 className="font-display text-4xl font-bold tracking-[-0.05em]">
+            {t("dashboard.title")}
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             {allItems.length === 0
               ? t("dashboard.emptySubtitle")
               : t("dashboard.itemsCount", { count: allItems.length })}
           </p>
         </div>
-        <button
-          onClick={() => setShowSaveModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-accent text-accent-foreground font-medium text-sm hover:opacity-90 transition-opacity cursor-pointer"
-        >
-          <Plus className="h-4 w-4" />
-          {t("nav.saveNew")}
-        </button>
+        <GlowCard className="w-auto" innerClassName="p-2" interactive={false}>
+          <button
+            onClick={() => setShowSaveModal(true)}
+            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)]"
+            aria-label={t("nav.saveNew")}
+          >
+            <Plus className="h-4 w-4" />
+            {t("nav.saveNew")}
+          </button>
+        </GlowCard>
       </div>
+
+      <form onSubmit={handleDashboardSearch} className="mb-6">
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/50 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.07))] px-6 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.38)] backdrop-blur-xl transition-[border-color,box-shadow] focus-within:border-white/60 focus-within:shadow-[inset_0_1px_0_rgba(255,255,255,0.44)]">
+          <SearchIcon className="pointer-events-none absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/80" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={`${t("search.title")}...`}
+            className="w-full rounded-[inherit] bg-transparent pl-10 pr-4 text-[clamp(1.8rem,3.4vw,3.6rem)] font-display font-medium tracking-[-0.05em] text-foreground placeholder:text-[#b7aab7] focus:outline-none focus-visible:outline-none focus-visible:ring-0"
+            aria-label={t("search.placeholder")}
+          />
+        </div>
+      </form>
 
       {/* Smart Spaces filter chips */}
       {categories.length > 0 && (
-        <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
+        <div className="mb-6 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button
             onClick={() => setActiveCategory("all")}
-            className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer border ${
+            className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium transition-all border ${
               activeCategory === "all"
-                ? "bg-accent text-accent-foreground border-accent"
-                : "bg-secondary text-secondary-foreground border-transparent hover:border-border"
+                ? "bg-accent text-accent-foreground border-accent shadow-[0_14px_30px_rgba(255,0,140,0.18)]"
+                : "glass-panel text-secondary-foreground border-transparent"
             }`}
           >
             {t("dashboard.allSpaces")}
@@ -790,10 +1055,10 @@ export function DashboardContent({
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium capitalize transition-all cursor-pointer border ${
+              className={`shrink-0 rounded-full px-3 py-2 text-xs font-medium capitalize transition-all border ${
                 activeCategory === cat
-                  ? "bg-accent text-accent-foreground border-accent"
-                  : "bg-secondary text-secondary-foreground border-transparent hover:border-border"
+                  ? "bg-accent text-accent-foreground border-accent shadow-[0_14px_30px_rgba(255,0,140,0.18)]"
+                  : "glass-panel text-secondary-foreground border-transparent"
               }`}
             >
               {cat}
@@ -807,7 +1072,7 @@ export function DashboardContent({
         <EmptyState onAdd={() => setShowSaveModal(true)} t={t} />
       ) : (
         <>
-          <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
+          <div className="columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3 xl:columns-4">
             {filteredItems.map((item) => (
               <ItemCard key={item.id} item={item} locale={preferredLanguage} t={t} />
             ))}
@@ -839,20 +1104,20 @@ export function DashboardContent({
       {/* Extension auto-save toast */}
       {autoSaveStatus !== "idle" && (
         <div
-          className={`fixed bottom-5 right-5 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg text-sm font-medium transition-all border
-            ${autoSaveStatus === "saving" ? "bg-card border-border text-foreground" : ""}
-            ${autoSaveStatus === "saved" ? "bg-card border-green-500/40 text-green-600 dark:text-green-400" : ""}
-            ${autoSaveStatus === "error" ? "bg-card border-destructive/40 text-destructive" : ""}
+          className={`glass-panel fixed bottom-5 right-5 z-50 flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-medium transition-all border
+            ${autoSaveStatus === "saving" ? "text-foreground" : ""}
+            ${autoSaveStatus === "saved" ? "border-green-500/40 text-green-600 dark:text-green-400" : ""}
+            ${autoSaveStatus === "error" ? "border-destructive/40 text-destructive" : ""}
           `}
         >
           {autoSaveStatus === "saving" && (
-            <><Loader2 className="h-4 w-4 animate-spin shrink-0" /> Saving from extension…</>
+            <><Loader2 className="h-4 w-4 animate-spin shrink-0" /> {t("dashboard.extensionSaving")}</>
           )}
           {autoSaveStatus === "saved" && (
-            <><CheckCircle2 className="h-4 w-4 shrink-0" /> Saved to YourMind!</>
+            <><CheckCircle2 className="h-4 w-4 shrink-0" /> {t("dashboard.extensionSaved")}</>
           )}
           {autoSaveStatus === "error" && (
-            <><AlertCircle className="h-4 w-4 shrink-0" /> Failed to save. Try again.</>
+            <><AlertCircle className="h-4 w-4 shrink-0" /> {t("dashboard.extensionError")}</>
           )}
         </div>
       )}
