@@ -11,17 +11,27 @@ checksums:
     landing/badge: 37dfd99e7b577b50353e92d94ecb6730
     landing/headline1: a645726ea266595e606c4b86c3e5bf7f
     landing/headline2: 17bfd1bbcaf8f5ffcccec08a36627836
-    landing/subheadline: 61bd02af34eba32555bd70682aa8c7ed
+    landing/subheadline: c78894fb2c6a461955a563449f898b74
     landing/ctaPrimary: 0f5a2a6fe5a1d1fe79467957a2b6f85a
     landing/ctaSecondary: 5a2d82ab1e05251a3c7310b04fa690ab
-    landing/feature1Title: eea46c8be7b81c9eec552207f9777da2
-    landing/feature1Desc: bdaf072480b34ea30eae8804fa5d34df
-    landing/feature2Title: 710bfac295582e076f35d3e7a6c364b4
-    landing/feature2Desc: d177539731f1abd6f0370bb72e9820e8
-    landing/feature3Title: 4876ab45b0efc4f6536196006665458d
-    landing/feature3Desc: 2f06ec7d45a132f240de931028963180
+    landing/feature1Title: c98ea69ed964e7fdc157bc5b6dad42e8
+    landing/feature1Desc: 51b3b14e42407a6ea6e81242e751486d
+    landing/feature2Title: 10e548585b4e23f8ac1e29a3262b489f
+    landing/feature2Desc: ca87c12443daa57db4b9439382fdd916
+    landing/feature3Title: 03726db59d462367b834d2c97a0465f8
+    landing/feature3Desc: 6b28e926ab278ed37a7b5ea579f6cae6
+    landing/showcaseBadge: b4bbe492dc5588ed30526ac99c4976d7
+    landing/sectionEyebrow: 5f102492542195b84dcde104c9977ac8
+    landing/sectionTitle: b3aaafa92dd9ad8c0eb7b75ccd13f7be
     auth/welcomeBack: 4928884739ba559e6e4b960e80fe1452
     auth/signInSubtitle: 15e53da5cad39e4e2b2d0216e4fcc2a4
+    auth/signInEyebrow: cb8757c7450e17de1e226e82fb0fa4a2
+    auth/signInPanelTitle: af383e17066c402b2ed91d537d1047e6
+    auth/signInPanelBody: b565006d876f59e41fe48aee9f900945
+    auth/signInPanelPoint1Title: d267d237f7bb9eae7008afe824bdb7a9
+    auth/signInPanelPoint1Desc: 49f8da2f2947e45228b441daf01be6ec
+    auth/signInPanelPoint2Title: 532ae04486d78aa53a5234ade69f6337
+    auth/signInPanelPoint2Desc: a22e40cb47b17211fdf4f3ebeac7ee64
     auth/emailLabel: e7f34943a0c2fb849db1839ff6ef5cb5
     auth/emailPlaceholder: 3cbb854500cac63513492e7abbc5cff3
     auth/passwordLabel: 223a61cf906ab9c40d22612c588dff48
@@ -32,11 +42,19 @@ checksums:
     auth/signUp: a6a0b995463f62ce6a12e37f1d05a9bd
     auth/createAccount: 99ef5a3eeab6aa98f0b5577b013b5e76
     auth/signUpSubtitle: 5d5834df3c50afa2069063353d76c33e
+    auth/signUpEyebrow: 5c783951b0100a168bdd2161ff294833
+    auth/signUpPanelTitle: 0735599fcc20b440e219f8c965f6d02a
+    auth/signUpPanelBody: 545331e3eb966e5831035aea979f326f
+    auth/signUpPanelPoint1Title: daf94d227b7ba710d1ee37763756dd83
+    auth/signUpPanelPoint1Desc: 99905148fcb443d7e9d23a76a5e3b650
+    auth/signUpPanelPoint2Title: 538162c2f23082839bc0f6f847a4aea6
+    auth/signUpPanelPoint2Desc: 98f8ec8536091a288831936b3e0bc4e3
     auth/passwordMin: a8ece077fb5a4d4d2cfebc1454361fae
     auth/continue: 3cfba90b4600131e82fc4260c568d044
     auth/alreadyHaveAccount: 699043a787e26ec2ecad53f52df28d5b
     auth/chooseLanguage: 3252f1e704b80636acbaa469a703d263
     auth/chooseLanguageSubtitle: 282af6c743b4bcce64aa8c6182fd7a5f
+    auth/personalization: b508ce0cd0ece588d55caaef95b9c6b9
     auth/startUsing: d19dc97fd7ff14e32849bcc1da4d4cfd
     auth/back: f541015a827e37cb3b1234e56bc2aa3c
     dashboard/title: 16029c196e1f934c5fc25f88dededc1f
