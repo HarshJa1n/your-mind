@@ -53,7 +53,7 @@ function resolveUrl(value: string | null | undefined, baseUrl: string): string |
   }
 }
 
-async function fetchUrlHtml(url: string): Promise<string> {
+export async function fetchUrlHtml(url: string): Promise<string> {
   const res = await fetch(url, {
     headers: {
       "User-Agent":
@@ -63,6 +63,158 @@ async function fetchUrlHtml(url: string): Promise<string> {
   });
 
   return res.text();
+}
+
+function extractMetaContent(
+  html: string,
+  attr: "property" | "name" | "itemprop",
+  key: string
+) {
+  const regex = new RegExp(
+    `<meta[^>]*${attr}=["']${key}["'][^>]*content=["']([^"']+)["']`,
+    "i"
+  );
+  return html.match(regex)?.[1] || null;
+}
+
+function unique<T>(values: T[]) {
+  return Array.from(new Set(values));
+}
+
+function isLikelyGenericImageAsset(imageUrl: string, pageUrl: string) {
+  try {
+    const image = new URL(imageUrl);
+    const page = new URL(pageUrl);
+    const path = `${image.pathname}${image.search}`.toLowerCase();
+    const filename = path.split("/").pop() || "";
+
+    const suspiciousPatterns = [
+      /(^|[-_/])og(\.[a-z0-9]+|[-_/])/,
+      /opengraph/,
+      /social/,
+      /share/,
+      /default/,
+      /logo/,
+      /icon/,
+      /favicon/,
+      /avatar/,
+      /sprite/,
+      /apple-touch-icon/,
+      /android-chrome/,
+      /mstile/,
+      /banner/,
+    ];
+
+    if (suspiciousPatterns.some((pattern) => pattern.test(path) || pattern.test(filename))) {
+      return true;
+    }
+
+    if (image.hostname === page.hostname && /^\/(og|social)\./.test(image.pathname.toLowerCase())) {
+      return true;
+    }
+
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+function extractInlineImageCandidates(html: string, baseUrl: string) {
+  const candidates: string[] = [];
+  const imgTagRegex = /<img\b[^>]*>/gi;
+  const srcRegex = /\bsrc=["']([^"']+)["']/i;
+  const widthRegex = /\bwidth=["']?(\d{2,4})["']?/i;
+  const heightRegex = /\bheight=["']?(\d{2,4})["']?/i;
+
+  const tags = html.match(imgTagRegex) || [];
+  for (const tag of tags) {
+    const src = tag.match(srcRegex)?.[1];
+    if (!src) continue;
+
+    const width = Number(tag.match(widthRegex)?.[1] || 0);
+    const height = Number(tag.match(heightRegex)?.[1] || 0);
+    if ((width && width < 200) || (height && height < 200)) continue;
+
+    const lowerTag = tag.toLowerCase();
+    if (
+      /logo|avatar|icon|emoji|sprite|favicon/.test(lowerTag) ||
+      /data:image\//.test(src)
+    ) {
+      continue;
+    }
+
+    const resolved = resolveUrl(src, baseUrl);
+    if (resolved) candidates.push(resolved);
+    if (candidates.length >= 8) break;
+  }
+
+  return candidates;
+}
+
+async function verifyImageUrl(imageUrl: string): Promise<boolean> {
+  try {
+    const response = await fetch(imageUrl, {
+      method: "HEAD",
+      redirect: "follow",
+      signal: AbortSignal.timeout(5000),
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
+      },
+    });
+
+    if (!response.ok) return false;
+    const contentType = response.headers.get("content-type") || "";
+    return /^image\//i.test(contentType) && !/svg/i.test(contentType);
+  } catch {
+    try {
+      const response = await fetch(imageUrl, {
+        method: "GET",
+        redirect: "follow",
+        signal: AbortSignal.timeout(5000),
+        headers: {
+          Range: "bytes=0-0",
+          "User-Agent":
+            "Mozilla/5.0 (compatible; YourMind/1.0; +https://yourmind.app)",
+        },
+      });
+      if (!response.ok) return false;
+      const contentType = response.headers.get("content-type") || "";
+      return /^image\//i.test(contentType) && !/svg/i.test(contentType);
+    } catch {
+      return false;
+    }
+  }
+}
+
+export async function resolveBestArticleImage(
+  pageUrl: string,
+  html: string,
+  suggestedImage: string | null
+): Promise<string | null> {
+  const metaCandidates = [
+    extractMetaContent(html, "property", "og:image"),
+    extractMetaContent(html, "name", "twitter:image"),
+    extractMetaContent(html, "itemprop", "image"),
+  ]
+    .map((value) => resolveUrl(value, pageUrl))
+    .filter((value): value is string => Boolean(value));
+
+  const inlineCandidates = extractInlineImageCandidates(html, pageUrl);
+  const candidates = unique(
+    [suggestedImage, ...metaCandidates, ...inlineCandidates].filter(
+      (value): value is string => Boolean(value)
+    )
+  );
+
+  for (const candidate of candidates) {
+    if (isLikelyGenericImageAsset(candidate, pageUrl)) continue;
+    if (await verifyImageUrl(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
 }
 
 function parseArticleMetadata(html: string, url: string) {
@@ -76,14 +228,15 @@ function parseArticleMetadata(html: string, url: string) {
   const descMatch = html.match(
     /<meta[^>]*name="description"[^>]*content="([^"]+)"/i
   );
-  const ogImageMatch = html.match(
-    /<meta[^>]*property="og:image"[^>]*content="([^"]+)"/i
-  );
+  const ogImageMatch =
+    extractMetaContent(html, "property", "og:image") ||
+    extractMetaContent(html, "name", "twitter:image") ||
+    extractMetaContent(html, "itemprop", "image");
 
   return {
     title: (ogTitleMatch?.[1] || titleMatch?.[1] || url).trim(),
     description: ogDescMatch?.[1] || descMatch?.[1] || "",
-    image: resolveUrl(ogImageMatch?.[1] || null, url),
+    image: resolveUrl(ogImageMatch || null, url),
   };
 }
 

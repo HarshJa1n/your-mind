@@ -19,11 +19,19 @@ import { getUserCollection } from "./chroma";
 import {
   extractArticleMetadata,
   extractArticleContent,
+  fetchUrlHtml,
   processWithGemini,
   processImageWithGemini,
   processAudioWithGemini,
   processUrlWithGeminiContext,
+  resolveBestArticleImage,
 } from "./gemini";
+import {
+  detectNoteCardType,
+  detectUrlCardType,
+  type CardMetadata,
+  type CardType,
+} from "./card-types";
 import { translateMeta, translateTags } from "./lingo";
 import { createClient as createSupabaseClient } from "./supabase/server";
 import { v4 as uuidv4 } from "uuid";
@@ -71,11 +79,13 @@ export async function saveURLPipeline(
     id: itemId,
     user_id: userId,
     content_type: "article",
+    card_type: "article",
     source_url: url,
     original_title: hostname,
     translated_title: hostname,
     translated_language: preferredLanguage,
     auto_tags: [],
+    card_metadata: {},
   });
 
   if (insertError) {
@@ -109,6 +119,15 @@ async function processURLBackground({
     let description: string;
     let image: string | null;
     let aiResult: Awaited<ReturnType<typeof processWithGemini>>;
+    let cardType: CardType = "article";
+    let cardMetadata: CardMetadata = {};
+    let html = "";
+
+    try {
+      html = await fetchUrlHtml(url);
+    } catch {
+      html = "";
+    }
 
     // 1. Prefer Gemini URL Context so Gemini can fetch/index the page directly.
     const urlContextResult = await processUrlWithGeminiContext(url);
@@ -152,6 +171,13 @@ async function processURLBackground({
         preferredLanguage
       );
     }
+
+    const verifiedImage = await resolveBestArticleImage(url, html, image);
+    image = verifiedImage;
+
+    const detected = detectUrlCardType(url, html, title, image);
+    cardType = detected.cardType;
+    cardMetadata = detected.metadata;
 
     const textToEmbed = `${title}\n\n${description}\n\n${content}`.substring(0, 10000);
 
@@ -205,6 +231,12 @@ async function processURLBackground({
         auto_tags: translatedTags,
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
+        card_type: cardType,
+        card_metadata: cardMetadata,
+        content_type:
+          cardType === "image" || cardType === "pdf" || cardType === "audio" || cardType === "video"
+            ? cardType
+            : "article",
         thumbnail_url: image,
         chroma_id: chromaId,
       })
@@ -229,6 +261,7 @@ export async function saveNotePipeline(
     id: itemId,
     user_id: userId,
     content_type: "note",
+    card_type: "note",
     original_title: title,
     original_content: content,
     original_summary: content.substring(0, 200),
@@ -236,6 +269,7 @@ export async function saveNotePipeline(
     translated_summary: content.substring(0, 200),
     translated_language: preferredLanguage,
     auto_tags: [],
+    card_metadata: {},
   });
 
   if (insertError) {
@@ -271,6 +305,7 @@ async function processNoteBackground({
 
   try {
     const textToEmbed = `${title}\n\n${content}`;
+    const detected = detectNoteCardType(title, content);
 
     // AI processing
     const aiResult = await processWithGemini(content, title, preferredLanguage);
@@ -316,6 +351,8 @@ async function processNoteBackground({
         auto_tags: translatedTags,
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
+        card_type: detected.cardType,
+        card_metadata: detected.metadata,
         chroma_id: chromaId,
       })
       .eq("id", itemId);
@@ -346,10 +383,12 @@ export async function saveImagePipeline(
     id: itemId,
     user_id: userId,
     content_type: "image",
+    card_type: "image",
     original_title: fileName,
     translated_title: fileName,
     translated_language: preferredLanguage,
     auto_tags: [],
+    card_metadata: {},
   });
 
   if (insertError) return { itemId, success: false, error: insertError.message };
@@ -438,6 +477,10 @@ async function processImageBackground({
         auto_tags: translatedTags,
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
+        card_type: "image",
+        card_metadata: {
+          imageUrl: thumbnailUrl,
+        },
         thumbnail_url: thumbnailUrl,
         chroma_id: chromaId,
       })
@@ -461,10 +504,12 @@ export async function saveAudioPipeline(
     id: itemId,
     user_id: userId,
     content_type: "audio",
+    card_type: "audio",
     original_title: fileName,
     translated_title: fileName,
     translated_language: preferredLanguage,
     auto_tags: [],
+    card_metadata: {},
   });
 
   if (insertError) return { itemId, success: false, error: insertError.message };
@@ -541,6 +586,8 @@ async function processAudioBackground({
         auto_tags: translatedTags,
         auto_tags_original: aiResult.tags,
         content_category: aiResult.category,
+        card_type: "audio",
+        card_metadata: {},
         chroma_id: chromaId,
       })
       .eq("id", itemId);

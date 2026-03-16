@@ -87,7 +87,7 @@ export default function SettingsContent({
                   className={cn(
                     "glass-panel rounded-[1.35rem] p-4 text-left",
                     selectedLanguage === lang.code
-                      ? "border-accent/30 bg-accent text-accent-foreground shadow-[0_16px_36px_rgba(255,0,140,0.22)]"
+                      ? "border-accent/40 bg-[#ffd7ea] text-[#6a0042] shadow-[0_16px_36px_rgba(255,0,140,0.16)]"
                       : "hover:bg-white/80"
                   )}
                 >
@@ -98,7 +98,7 @@ export default function SettingsContent({
                         className={cn(
                           "text-xs",
                           selectedLanguage === lang.code
-                            ? "text-accent-foreground/75"
+                            ? "text-[#8d4a6e]"
                             : "text-muted-foreground"
                         )}
                       >

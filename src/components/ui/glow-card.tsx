@@ -7,11 +7,13 @@ export function GlowCard({
   className,
   innerClassName,
   glow = true,
+  interactive = true,
 }: {
   children: ReactNode;
   className?: string;
   innerClassName?: string;
   glow?: boolean;
+  interactive?: boolean;
 }) {
   return (
     <div
@@ -23,7 +25,7 @@ export function GlowCard({
       <GlowingEffect
         spread={38}
         glow={glow}
-        disabled={false}
+        disabled={!interactive}
         proximity={72}
         inactiveZone={0.08}
         borderWidth={2}

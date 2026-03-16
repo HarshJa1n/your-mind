@@ -54,7 +54,10 @@
     "processingFailedMsg": "Le délai de traitement a expiré. Essayez de l'enregistrer à nouveau.",
     "viewOriginal": "Voir l'original",
     "allSpaces": "Tout",
-    "loadingMore": "Chargement..."
+    "loadingMore": "Chargement...",
+    "extensionSaving": "Enregistrement depuis l'extension...",
+    "extensionSaved": "Enregistré dans YourMind",
+    "extensionError": "Échec de l'enregistrement. Réessayez."
   },
   "saveModal": {
     "title": "Enregistrer dans YourMind",

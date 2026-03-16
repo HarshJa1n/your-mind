@@ -54,7 +54,10 @@
     "processingFailedMsg": "El elemento agotó el tiempo de espera. Intenta guardarlo nuevamente.",
     "viewOriginal": "Ver original",
     "allSpaces": "Todo",
-    "loadingMore": "Cargando más..."
+    "loadingMore": "Cargando más...",
+    "extensionSaving": "Guardando desde la extensión...",
+    "extensionSaved": "Guardado en YourMind",
+    "extensionError": "No se pudo guardar. Inténtalo de nuevo."
   },
   "saveModal": {
     "title": "Guardar en YourMind",

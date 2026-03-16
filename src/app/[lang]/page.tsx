@@ -18,17 +18,17 @@ export default async function Home({
     <div className="app-shell min-h-screen overflow-x-hidden">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-6">
         <BrandLogo href={`/${lang}`} />
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-center">
           <LanguageSwitcher currentLang={lang} />
           <Link
             href={`/${lang}/login`}
-            className="glass-panel min-h-11 rounded-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="glass-panel inline-flex min-h-11 items-center justify-center rounded-full px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             {t("nav.signIn")}
           </Link>
           <Link
             href={`/${lang}/signup`}
-            className="inline-flex min-h-11 items-center rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] hover:-translate-y-0.5"
+            className="inline-flex min-h-11 items-center justify-center self-center rounded-full bg-[linear-gradient(135deg,#1b0913,#790050_55%,#ff008c)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(255,0,140,0.24)] hover:-translate-y-0.5"
           >
             {t("nav.getStarted")}
           </Link>

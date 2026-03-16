@@ -4,10 +4,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 vi.mock("@/lib/gemini", () => ({
   extractArticleMetadata: vi.fn(),
   extractArticleContent: vi.fn(),
+  fetchUrlHtml: vi.fn(),
   processWithGemini: vi.fn(),
   processImageWithGemini: vi.fn(),
   processAudioWithGemini: vi.fn(),
   processUrlWithGeminiContext: vi.fn(),
+  resolveBestArticleImage: vi.fn(),
 }));
 
 vi.mock("@/lib/lingo", () => ({
@@ -33,6 +35,7 @@ import {
   extractArticleContent,
   processUrlWithGeminiContext,
   processWithGemini,
+  resolveBestArticleImage,
 } from "@/lib/gemini";
 import { translateMeta, translateTags } from "@/lib/lingo";
 import { getUserCollection } from "@/lib/chroma";
@@ -42,6 +45,7 @@ const mockedCreateClient = vi.mocked(createClient);
 const mockedExtract = vi.mocked(extractArticleContent);
 const mockedProcessUrlWithContext = vi.mocked(processUrlWithGeminiContext);
 const mockedProcessGemini = vi.mocked(processWithGemini);
+const mockedResolveBestArticleImage = vi.mocked(resolveBestArticleImage);
 const mockedTranslateMeta = vi.mocked(translateMeta);
 const mockedTranslateTags = vi.mocked(translateTags);
 const mockedGetCollection = vi.mocked(getUserCollection);
@@ -103,6 +107,8 @@ describe("saveURLPipeline", () => {
       category: "technology",
       detectedLanguage: "en",
     });
+
+    mockedResolveBestArticleImage.mockResolvedValue("https://example.com/image.jpg");
 
     mockedTranslateMeta.mockResolvedValue({
       title: "परीक्षण लेख",

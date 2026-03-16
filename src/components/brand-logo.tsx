@@ -7,11 +7,13 @@ const LOGO_SRC = "/logo%20(1).png";
 export function BrandLogo({
   href,
   showWordmark = true,
+  showTagline = false,
   size = "md",
   className,
 }: {
   href?: string;
   showWordmark?: boolean;
+  showTagline?: boolean;
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
@@ -46,9 +48,11 @@ export function BrandLogo({
           >
             YourMind
           </span>
-          <span className="text-[11px] font-medium uppercase tracking-[0.34em] text-muted-foreground">
-            Think in any language
-          </span>
+          {showTagline ? (
+            <span className="text-[11px] font-medium uppercase tracking-[0.34em] text-muted-foreground">
+              Think in any language
+            </span>
+          ) : null}
         </span>
       ) : null}
     </span>

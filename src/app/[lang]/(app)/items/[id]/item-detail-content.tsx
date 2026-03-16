@@ -48,11 +48,16 @@ const CONTENT_TYPE_ICONS: Record<string, typeof FileText> = {
 };
 
 const CONTENT_TYPE_COLORS: Record<string, string> = {
-  article: "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300",
-  note: "bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300",
-  image: "bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300",
-  pdf: "bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300",
-  audio: "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300",
+  article:
+    "border border-sky-200/80 bg-sky-50 text-sky-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
+  note:
+    "border border-amber-200/80 bg-amber-50 text-amber-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
+  image:
+    "border border-pink-200/80 bg-pink-50 text-pink-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
+  pdf:
+    "border border-rose-200/80 bg-rose-50 text-rose-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
+  audio:
+    "border border-violet-200/80 bg-violet-50 text-violet-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.75)]",
 };
 
 export default function ItemDetailContent({

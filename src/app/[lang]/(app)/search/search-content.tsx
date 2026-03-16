@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Search as SearchIcon,
   Loader2,
@@ -46,14 +46,17 @@ const CONTENT_TYPE_ICONS: Record<string, typeof FileText> = {
 export default function SearchContent({
   messages,
   locale,
+  initialQuery = "",
 }: {
   messages: Messages;
   locale: string;
+  initialQuery?: string;
 }) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const hasAutoSearched = useRef(false);
   const t = createTranslator(messages);
 
   async function handleSearch(e: React.FormEvent) {
@@ -74,6 +77,22 @@ export default function SearchContent({
     } catch {}
     finally { setLoading(false); }
   }
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
+  useEffect(() => {
+    if (!initialQuery.trim() || hasAutoSearched.current) return;
+    hasAutoSearched.current = true;
+
+    const formLikeEvent = {
+      preventDefault() {},
+    } as React.FormEvent;
+
+    handleSearch(formLikeEvent);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery]);
 
   return (
     <div className="mx-auto max-w-6xl">

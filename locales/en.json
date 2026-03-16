@@ -54,7 +54,10 @@
     "processingFailedMsg": "The item timed out. Try saving it again.",
     "viewOriginal": "View original",
     "allSpaces": "All",
-    "loadingMore": "Loading more..."
+    "loadingMore": "Loading more...",
+    "extensionSaving": "Saving from extension...",
+    "extensionSaved": "Saved to YourMind!",
+    "extensionError": "Failed to save. Try again."
   },
   "saveModal": {
     "title": "Save to YourMind",

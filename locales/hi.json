@@ -54,7 +54,10 @@
     "processingFailedMsg": "आइटम टाइम आउट हो गया। दोबारा सेव करके देखें।",
     "viewOriginal": "ओरिजिनल देखें",
     "allSpaces": "सभी",
-    "loadingMore": "और लोड हो रहा है..."
+    "loadingMore": "और लोड हो रहा है...",
+    "extensionSaving": "एक्सटेंशन से सेव हो रहा है...",
+    "extensionSaved": "YourMind में सेव हो गया!",
+    "extensionError": "सेव नहीं हो पाया। फिर से कोशिश करें।"
   },
   "saveModal": {
     "title": "YourMind में सेव करें",
