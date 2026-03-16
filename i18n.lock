@@ -50,6 +50,9 @@ checksums:
     dashboard/viewOriginal: 6bf44f3127eaea754aedcc4980b0016e
     dashboard/allSpaces: 5e2e93f8e2a5f315b6fecdd0a0e6f55f
     dashboard/loadingMore: 265b328c20eab0c766521e63b08a774d
+    dashboard/extensionSaving: d2696060bf03e6ae2a3a97394692590f
+    dashboard/extensionSaved: 54519a5218b783f61c00a9ff18636fdf
+    dashboard/extensionError: cd5a9290948ed1e642ff62c281ac5498
     saveModal/title: 4966a67798d1132b8f22ee226a817a04
     saveModal/urlTab: ca97457614226960d41dd18c3c29c86b
     saveModal/noteTab: e0337f202c911423275f834edeffc54b
