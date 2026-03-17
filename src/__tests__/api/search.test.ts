@@ -131,6 +131,24 @@ describe("POST /api/search", () => {
     expect(body.results).toEqual([{ ...textResults[0], similarity: 0.7 }]);
   });
 
+  it("falls back to text search when semanticSearch returns no matches", async () => {
+    const textResults = [{ id: "item-4", original_title: "Translated fallback item" }];
+    mockedCreateClient.mockResolvedValue(
+      makeSupabaseMock({ textResults }) as never
+    );
+    mockedSemanticSearch.mockResolvedValueOnce([]);
+
+    const req = new Request("http://localhost/api/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "सीखने का तरीका" }),
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.results).toEqual([{ ...textResults[0], similarity: 0.7 }]);
+  });
+
   it("returns empty results array on fallback when no text matches", async () => {
     mockedCreateClient.mockResolvedValue(
       makeSupabaseMock({ textResults: [] }) as never

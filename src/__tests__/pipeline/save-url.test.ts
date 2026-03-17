@@ -36,6 +36,7 @@ vi.mock("uuid", () => ({
 import { createClient } from "@/lib/supabase/server";
 import {
   extractArticleContent,
+  fetchUrlHtml,
   processUrlWithGeminiContext,
   processWithGemini,
   resolveBestArticleImage,
@@ -46,6 +47,7 @@ import { saveURLPipeline } from "@/lib/pipeline";
 
 const mockedCreateClient = vi.mocked(createClient);
 const mockedExtract = vi.mocked(extractArticleContent);
+const mockedFetchUrlHtml = vi.mocked(fetchUrlHtml);
 const mockedProcessUrlWithContext = vi.mocked(processUrlWithGeminiContext);
 const mockedProcessGemini = vi.mocked(processWithGemini);
 const mockedResolveBestArticleImage = vi.mocked(resolveBestArticleImage);
@@ -77,6 +79,7 @@ function makeCollectionMock() {
 describe("saveURLPipeline", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedFetchUrlHtml.mockResolvedValue("");
 
     // Default happy-path mocks
     mockedExtract.mockResolvedValue({
@@ -214,5 +217,35 @@ describe("saveURLPipeline", () => {
 
     expect(mockedExtract).toHaveBeenCalledWith("https://example.com/fallback");
     expect(mockedProcessGemini).toHaveBeenCalled();
+  });
+
+  it("stores bilingual search text for stronger cross-language retrieval", async () => {
+    const mock = makeSupabaseMock();
+    const collection = makeCollectionMock();
+    mockedCreateClient.mockResolvedValue(mock as never);
+    mockedGetCollection.mockResolvedValue(collection as never);
+
+    await saveURLPipeline({
+      url: "https://example.com/article",
+      userId: "user-123",
+      preferredLanguage: "hi",
+    });
+
+    await vi.waitFor(() => {
+      expect(collection.add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documents: [
+            expect.stringContaining("परीक्षण लेख"),
+          ],
+        })
+      );
+    });
+    expect(collection.add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        documents: [
+          expect.stringContaining("एक परीक्षण सारांश"),
+        ],
+      })
+    );
   });
 });

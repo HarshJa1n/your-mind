@@ -55,6 +55,15 @@ export interface PipelineResult {
   error?: string;
 }
 
+function buildSearchDocument(parts: Array<string | null | undefined>, maxLength = 12000) {
+  return parts
+    .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+    .join("\n\n")
+    .replace(/\s+/g, " ")
+    .trim()
+    .substring(0, maxLength);
+}
+
 /**
  * Full pipeline for saving a URL (article).
  * Returns immediately with a placeholder item, processes in background.
@@ -179,8 +188,6 @@ async function processURLBackground({
     cardType = detected.cardType;
     cardMetadata = detected.metadata;
 
-    const textToEmbed = `${title}\n\n${description}\n\n${content}`.substring(0, 10000);
-
     // 3. Translate title + summary via Lingo.dev SDK (Layer 2)
     const { title: translatedTitle, summary: translatedSummary } =
       await translateMeta(
@@ -195,6 +202,17 @@ async function processURLBackground({
       aiResult.detectedLanguage || "en",
       preferredLanguage
     );
+
+    const textToEmbed = buildSearchDocument([
+      aiResult.title,
+      aiResult.summary,
+      description,
+      content,
+      aiResult.tags.join(" "),
+      translatedTitle,
+      translatedSummary,
+      translatedTags.join(" "),
+    ]);
 
     // 4. Embed text + store in Chroma (optional — don't block Supabase update)
     let chromaId: string | null = null;
@@ -304,7 +322,6 @@ async function processNoteBackground({
   const supabase = await createSupabaseClient();
 
   try {
-    const textToEmbed = `${title}\n\n${content}`;
     const detected = detectNoteCardType(title, content);
 
     // AI processing
@@ -324,6 +341,16 @@ async function processNoteBackground({
       aiResult.detectedLanguage || "en",
       preferredLanguage
     );
+
+    const textToEmbed = buildSearchDocument([
+      title,
+      content,
+      aiResult.summary,
+      aiResult.tags.join(" "),
+      translatedTitle,
+      translatedSummary,
+      translatedTags.join(" "),
+    ]);
 
     // Embed + store in Chroma (optional)
     let chromaId: string | null = null;
@@ -433,7 +460,15 @@ async function processImageBackground({
       );
     const translatedTags = await translateTags(aiResult.tags, "en", preferredLanguage);
 
-    const textToEmbed = `${aiResult.title}\n\n${aiResult.description}\n\n${aiResult.summary}`;
+    const textToEmbed = buildSearchDocument([
+      aiResult.title,
+      aiResult.description,
+      aiResult.summary,
+      aiResult.tags.join(" "),
+      translatedTitle,
+      translatedSummary,
+      translatedTags.join(" "),
+    ]);
     let chromaId: string | null = null;
     try {
       const collection = await getUserCollection(userId);
@@ -583,7 +618,15 @@ async function processAudioBackground({
       preferredLanguage
     );
 
-    const textToEmbed = `${aiResult.title}\n\n${aiResult.transcript}\n\n${aiResult.summary}`;
+    const textToEmbed = buildSearchDocument([
+      aiResult.title,
+      aiResult.transcript,
+      aiResult.summary,
+      aiResult.tags.join(" "),
+      translatedTitle,
+      translatedSummary,
+      translatedTags.join(" "),
+    ]);
     let chromaId: string | null = null;
     try {
       const collection = await getUserCollection(userId);
