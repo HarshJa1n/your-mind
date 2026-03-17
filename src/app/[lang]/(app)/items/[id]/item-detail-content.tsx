@@ -81,10 +81,10 @@ export default function ItemDetailContent({
   const title = item.translated_title || item.original_title || t("common.untitled");
   const summary = item.translated_summary || item.original_summary;
 
-  const originalLang = item.original_language || "en";
-  // Need to translate if content language differs from user locale
+  const originalLang = item.original_language;
+  // If the source language is missing, still attempt Layer 3 translation.
   const needsContentTranslation =
-    !!item.original_content && originalLang !== locale;
+    !!item.original_content && (!originalLang || originalLang !== locale);
 
   const displayContent = showOriginal
     ? item.original_content
@@ -149,10 +149,10 @@ export default function ItemDetailContent({
               <Icon className="h-3 w-3" />
               {t(`contentTypes.${item.content_type}`)}
             </span>
-            {needsContentTranslation && (
+                {needsContentTranslation && (
               <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-xs text-muted-foreground">
                 <Globe className="h-3 w-3" />
-                {originalLang.toUpperCase()} &#8594; {locale.toUpperCase()}
+                {(originalLang || "AUTO").toUpperCase()} &#8594; {locale.toUpperCase()}
               </span>
             )}
             {item.content_category && (

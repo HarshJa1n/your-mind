@@ -7,14 +7,16 @@ vi.mock("@/lib/supabase/server", () => ({
 
 // ── Mock Lingo ─────────────────────────────────────────────────────────────
 vi.mock("@/lib/lingo", () => ({
+  detectLocale: vi.fn().mockResolvedValue("en"),
   translateContent: vi.fn().mockResolvedValue("Translated content here"),
 }));
 
 import { createClient } from "@/lib/supabase/server";
-import { translateContent } from "@/lib/lingo";
+import { detectLocale, translateContent } from "@/lib/lingo";
 import { POST } from "@/app/api/items/[id]/translate/route";
 
 const mockedCreateClient = vi.mocked(createClient);
+const mockedDetectLocale = vi.mocked(detectLocale);
 const mockedTranslate = vi.mocked(translateContent);
 
 // ── Mock factory ───────────────────────────────────────────────────────────
@@ -143,5 +145,26 @@ describe("POST /api/items/:id/translate", () => {
     const { req, routeParams } = makeRequest("nonexistent", { targetLocale: "hi" });
     const res = await POST(req as never, { params: routeParams });
     expect(res.status).toBe(404);
+  });
+
+  it("detects source locale when original_language is missing", async () => {
+    const mock = makeSupabaseMock({
+      cached: null,
+      item: {
+        original_content: "Hola mundo",
+        original_language: null as unknown as string,
+        user_id: "user-123",
+      },
+    });
+    mockedCreateClient.mockResolvedValue(mock as never);
+    mockedDetectLocale.mockResolvedValueOnce("es");
+    mockedTranslate.mockResolvedValueOnce("Hello world");
+
+    const { req, routeParams } = makeRequest("item-1", { targetLocale: "en" });
+    const res = await POST(req as never, { params: routeParams });
+
+    expect(res.status).toBe(200);
+    expect(mockedDetectLocale).toHaveBeenCalledWith("Hola mundo");
+    expect(mockedTranslate).toHaveBeenCalledWith("Hola mundo", "es", "en");
   });
 });

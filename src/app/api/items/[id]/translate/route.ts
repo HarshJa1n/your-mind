@@ -13,7 +13,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { translateContent } from "@/lib/lingo";
+import { detectLocale, translateContent } from "@/lib/lingo";
 
 export async function POST(
   request: NextRequest,
@@ -67,9 +67,12 @@ export async function POST(
   }
 
   // 3. Translate via Lingo.dev SDK
+  const sourceLocale =
+    item.original_language || (await detectLocale(item.original_content));
+
   const translated = await translateContent(
     item.original_content,
-    item.original_language || "en",
+    sourceLocale || "en",
     targetLocale
   );
 

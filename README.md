@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# YourMind
 
-## Getting Started
+YourMind is a multilingual second-brain app built with Next.js, Supabase, Gemini, Chroma, and Lingo.dev.
 
-First, run the development server:
+It lets users save URLs, notes, images, and audio, then:
+- summarize and categorize them with AI
+- translate titles, summaries, tags, and full content
+- search across languages
+- browse a card-based visual memory space
+
+## What’s Shipped
+
+- Email/password and Google auth with language preference
+- URL save pipeline with Gemini URL Context first, local extraction fallback second
+- Notes, image upload, and audio upload flows
+- Card-aware dashboard UI with masonry layout and infinite scroll
+- Full-content item detail view with on-demand translation and cache
+- Semantic search backed by Chroma
+- Native multimodal embeddings for image and audio items
+- Supabase-backed thumbnail storage for uploaded images
+- Locale-routed UI with `en`, `hi`, `es`, `fr`, `de`, and `ja`
+- Chrome extension for one-click URL save
+
+## Stack
+
+- Next.js 16 App Router
+- React 19
+- Supabase Auth, Postgres, and Storage
+- Chroma Cloud
+- Gemini 2.5 Flash / Gemini 2.0 Flash
+- Gemini Embedding 2 Preview
+- Lingo.dev SDK + GitHub i18n workflow
+- Tailwind CSS
+- Vitest
+
+## Local Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create `.env.local` with:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+GEMINI_API_KEY=
+LINGO_API_KEY=
+LINGODOTDEV_API_KEY=
+CHROMA_API_KEY=
+CHROMA_TENANT=
+CHROMA_DATABASE=
+```
+
+Run the app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run tests:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm test
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Build production:
 
-## Learn More
+```bash
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Supabase Notes
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This repo expects the Supabase migrations in [`/Users/appointy/code/your-mind/supabase/migrations`](/Users/appointy/code/your-mind/supabase/migrations) to be applied.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Important shipped migrations:
+- `20260312171134_initial_schema.sql`
+- `20260315234000_card_type_system.sql`
+- `20260315235500_create_uploads_bucket.sql`
 
-## Deploy on Vercel
+The `uploads` bucket is used for image thumbnails and should be public.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Search and Embeddings
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Text items are embedded as text with Gemini Embedding 2
+- Image and audio items now use native multimodal embeddings
+- UI-facing titles, summaries, and tags are still generated separately for display and translation
+- Search queries remain text queries, but they operate against the same vector space in Chroma
+
+## i18n
+
+Static UI strings live in [`/Users/appointy/code/your-mind/locales`](/Users/appointy/code/your-mind/locales).
+
+This repo is set up to translate locale changes on push to `main` via:
+
+- [`.github/workflows/i18n.yml`](/Users/appointy/code/your-mind/.github/workflows/i18n.yml)
+
+The local `lingo.dev` CLI is configured in the project, but on this machine it may fail with a platform error. In that case, pushing source-string changes to `main` is the intended path so the GitHub workflow can fill missing locale keys.
+
+## Chrome Extension
+
+The extension lives in [`/Users/appointy/code/your-mind/chrome-extension`](/Users/appointy/code/your-mind/chrome-extension).
+
+It redirects the current page into the web app save flow using `?save=<url>`.
+
+## Project Structure
+
+- [`/Users/appointy/code/your-mind/src/app`](/Users/appointy/code/your-mind/src/app): routes, pages, and API handlers
+- [`/Users/appointy/code/your-mind/src/components`](/Users/appointy/code/your-mind/src/components): UI building blocks
+- [`/Users/appointy/code/your-mind/src/lib`](/Users/appointy/code/your-mind/src/lib): pipeline, Gemini, Chroma, i18n, Supabase helpers
+- [`/Users/appointy/code/your-mind/locales`](/Users/appointy/code/your-mind/locales): locale JSON
+- [`/Users/appointy/code/your-mind/supabase`](/Users/appointy/code/your-mind/supabase): Supabase config and migrations
+
+## Verification
+
+Latest local verification before this README update:
+
+- `npm test` passed
+- `npm run build` passed
+
